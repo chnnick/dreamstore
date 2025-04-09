@@ -1,102 +1,160 @@
-import Image from "next/image";
+// src/app/page.tsx
+"use client";
 
-export default function Home() {
+import { useState } from 'react';
+import Image from 'next/image';
+
+// Product type definition
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  imageUrl: string;
+}
+
+// Sample product data
+const products: Product[] = [
+  {
+    id: 1,
+    name: "GRAPE GRAPE",
+    price: 24.99,
+    description: "GRAPE GRAPE",
+    imageUrl: "/images/grape.jpeg"
+  },
+  {
+    id: 2,
+    name: "GRAPE GRAPE",
+    price: 59.99,
+    description: "GRAPE GRAPE",
+    imageUrl: "/images/grape.jpeg"
+  },
+  {
+    id: 3,
+    name: "GRAPE GRAPE",
+    price: 89.99,
+    description: "GRAPE GRAPE",
+    imageUrl: "/images/grape.jpeg"
+  },
+  {
+    id: 4,
+    name: "GRAPE GRAPE",
+    price: 34.99,
+    description: "GRAPE GRAPE",
+    imageUrl: "/images/grape.jpeg"
+  }, 
+  {
+    id: 5,
+    name: "GRAPE GRAPE",
+    price: 24.99,
+    description: "GRAPE GRAPE",
+    imageUrl: "/images/grape.jpeg"
+  },
+  {
+    id: 6,
+    name: "GRAPE GRAPE",
+    price: 59.99,
+    description: "GRAPE GRAPE",
+    imageUrl: "/images/grape.jpeg"
+  },
+  {
+    id: 7,
+    name: "GRAPE GRAPE",
+    price: 89.99,
+    description: "GRAPE GRAPE",
+    imageUrl: "/images/grape.jpeg"
+  },
+  {
+    id: 8,
+    name: "GRAPE GRAPE",
+    price: 34.99,
+    description: "GRAPE GRAPE",
+    imageUrl: "/images/grape.jpeg"
+  }
+];
+
+export default function ShopPage() {
+  const [cart, setCart] = useState<Product[]>([]);
+  
+  const addToCart = (product: Product) => {
+    setCart([...cart, product]);
+  };
+  
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="bg-grey-200 text-white min-h-screen">
+      {/* Header */}
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">DreamCore Shop</h1>
+          <div className="flex items-center">
+            <span className="mr-2">Cart ({cart.length})</span>
+            <button className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+              Checkout
+            </button>
+          </div>
+        </div>
+      </header>
+      
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {/* Featured Banner */}
+        <div className="bg-indigo-100 rounded-lg p-6 mb-8">
+          <h2 className="text-2xl font-semibold text-indigo-900 mb-2">Shop our GRAPES</h2>
+          <p className="text-indigo-800 mb-4">Discover our latest products for the spring season!</p>
+          <button className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+            Shop Now
+          </button>
+        </div>
+        
+        {/* Products Grid */}
+        <h2 className="text-2xl font-semibold mb-6">Featured Products</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {products.map((product) => (
+            <div key={product.id} className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="relative h-48 w-full">
+                <Image
+                  src={product.imageUrl}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="text-lg font-medium">{product.name}</h3>
+                <p className="text-gray-600 text-sm mt-1">{product.description}</p>
+                <div className="flex justify-between items-center mt-4">
+                  <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
+                  <button 
+                    onClick={() => addToCart(product)}
+                    className="bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700 text-sm"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white mt-12">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between">
+            <div className="mb-6 md:mb-0">
+              <h3 className="text-lg font-semibold mb-2">DreamCore Shop</h3>
+              <p className="text-gray-300">Quality grapes for everyone</p>
+            </div>
+            <div>
+              <h4 className="text-md font-semibold mb-2">Contact Us</h4>
+              <p className="text-gray-300">support@dreamcore.com</p>
+              <p className="text-gray-300">1-800-DREAM</p>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-300">
+            <p>&copy; {new Date().getFullYear()} DreamCore Shop. All rights reserved.</p>
+          </div>
+        </div>
       </footer>
     </div>
   );
