@@ -81,7 +81,6 @@ export default function ShopPage() {
   
   return (
     <div className="bg-grey-200 text-white min-h-screen">
-      <Header />
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Featured Banner */}
@@ -122,7 +121,6 @@ export default function ShopPage() {
           ))}
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
