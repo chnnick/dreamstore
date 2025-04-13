@@ -1,162 +1,204 @@
 "use client"
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useState, useEffect } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
-import { 
-  Form, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormControl, 
-  FormMessage 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useRouter } from 'next/navigation';
 
-// Define form types
-type CheckoutFormValues = {
-  firstName: string;
-  lastName: string;
+// Type definitions
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  imageUrl: string;
+}
+
+interface CartItem {
+  product: Product;
+  quantity: number;
+}
+interface CheckoutFormValues {
+  name: string;
   email: string;
   address: string;
   city: string;
-  zipCode: string;
+  zip: string;
   cardNumber: string;
-  cardExpiry: string;
-  cardCvc: string;
-};
-interface Product {
-    id: number;
-    name: string;
-    price: number;
-    description: string;
-    imageUrl: string;
-  }
-  
-  interface CartItem {
-    product: Product;
-    quantity: number;
-  }
+  expiryDate: string;
+  cvv: string;
+}
 export default function CheckoutPage() {
-  // Get cart items from localStorage
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      const savedCart = localStorage.getItem('cart');
-      return savedCart ? (JSON.parse(savedCart) as CartItem[]) : [];
-    }
-    return [];
-  });
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  // Calculate cart total
-  const cartTotal = cartItems.reduce(
-    (total: number, item: CartItem) => total + item.product.price * item.quantity,
-    0
-  );
-  
-
-  // Setup react-hook-form
+  // Initialize react-hook-form
   const form = useForm<CheckoutFormValues>({
     defaultValues: {
-      firstName: '',
-      lastName: '',
+      name: '',
       email: '',
       address: '',
       city: '',
-      zipCode: '',
+      zip: '',
       cardNumber: '',
-      cardExpiry: '',
-      cardCvc: '',
+      expiryDate: '',
+      cvv: '',
     },
   });
 
-  // Handle form submission
-  function onSubmit(data: CheckoutFormValues) {
-    console.log('Form submitted:', data);
-    // Here you would typically send the order to your backend
-    alert('Order placed successfully!');
-  }
+  // Load cart from localStorage on component mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      setCartItems(JSON.parse(savedCart));
+    }
+  }, []);
+
+  const cartTotal = cartItems.reduce(
+    (total, item) => total + item.product.price * item.quantity, 
+    0
+  );
+
+  const shippingCost = 5.99;
+  const finalTotal = cartTotal + shippingCost;
+
+  const onSubmit: SubmitHandler<CheckoutFormValues> = async (data) => {
+    setLoading(true);
+
+    try {
+      // In a real app, you would:
+      // 1. Send payment info to payment processor (Stripe, PayPal, etc.)
+      // 2. Create order in your database
+      // 3. Empty the cart
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Clear cart in localStorage
+      localStorage.removeItem('cart');
+      
+      // Redirect to success page
+      router.push('/checkout/success');
+    } catch (error) {
+      console.error('Payment failed:', error);
+      alert('Payment failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+      <div className="max-w-4xl mx-auto px-4">
+        <h1 className="text-3xl font-bold mb-8 text-center">Checkout</h1>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Checkout Form */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Shipping & Payment Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Personal Information */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Personal Information</h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="firstName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>First Name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="John" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="lastName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Last Name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Doe" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Order Summary */}
+          <Card className="md:col-span-1">
+            <CardHeader>
+              <CardTitle>Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {cartItems.map((item) => (
+                  <div key={item.product.id} className="flex justify-between">
+                    <div>
+                      <p className="font-medium">{item.product.name}</p>
+                      <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                    </div>
+                    <p className="font-medium">${(item.product.price * item.quantity).toFixed(2)}</p>
+                  </div>
+                ))}
+                
+                <Separator />
+                
+                <div className="flex justify-between">
+                  <p>Subtotal</p>
+                  <p className="font-medium">${cartTotal.toFixed(2)}</p>
+                </div>
+                
+                <div className="flex justify-between">
+                  <p>Shipping</p>
+                  <p className="font-medium">${shippingCost.toFixed(2)}</p>
+                </div>
+                
+                <Separator />
+                
+                <div className="flex justify-between text-lg font-bold">
+                  <p>Total</p>
+                  <p>${finalTotal.toFixed(2)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Payment Form */}
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>Payment Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Shipping Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Shipping Information</h3>
+                    
+                    <div className="grid grid-cols-1 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl>
+                              <Input {...field} required />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
                       <FormField
                         control={form.control}
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email Address</FormLabel>
+                            <FormLabel>Email</FormLabel>
                             <FormControl>
-                              <Input type="email" placeholder="johndoe@example.com" {...field} />
+                              <Input type="email" {...field} required />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
-
-                    <Separator />
-
-                    {/* Shipping Information */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Shipping Address</h3>
+                      
                       <FormField
                         control={form.control}
                         name="address"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Street Address</FormLabel>
+                            <FormLabel>Address</FormLabel>
                             <FormControl>
-                              <Input placeholder="123 Main St" {...field} />
+                              <Input {...field} required />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
+                      
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -165,20 +207,21 @@ export default function CheckoutPage() {
                             <FormItem>
                               <FormLabel>City</FormLabel>
                               <FormControl>
-                                <Input placeholder="San Francisco" {...field} />
+                                <Input {...field} required />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+                        
                         <FormField
                           control={form.control}
-                          name="zipCode"
+                          name="zip"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>ZIP / Postal Code</FormLabel>
+                              <FormLabel>ZIP Code</FormLabel>
                               <FormControl>
-                                <Input placeholder="94103" {...field} />
+                                <Input {...field} required />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -186,12 +229,15 @@ export default function CheckoutPage() {
                         />
                       </div>
                     </div>
-
-                    <Separator />
-
-                    {/* Payment Information */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Payment Details</h3>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Payment Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Payment Information</h3>
+                    
+                    <div className="grid grid-cols-1 gap-4">
                       <FormField
                         control={form.control}
                         name="cardNumber"
@@ -199,34 +245,36 @@ export default function CheckoutPage() {
                           <FormItem>
                             <FormLabel>Card Number</FormLabel>
                             <FormControl>
-                              <Input placeholder="4242 4242 4242 4242" {...field} />
+                              <Input placeholder="1234 5678 9012 3456" {...field} required />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
+                      
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
-                          name="cardExpiry"
+                          name="expiryDate"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Expiration Date (MM/YY)</FormLabel>
+                              <FormLabel>Expiry Date</FormLabel>
                               <FormControl>
-                                <Input placeholder="12/24" {...field} />
+                                <Input placeholder="MM/YY" {...field} required />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+                        
                         <FormField
                           control={form.control}
-                          name="cardCvc"
+                          name="cvv"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>CVC</FormLabel>
+                              <FormLabel>CVV</FormLabel>
                               <FormControl>
-                                <Input placeholder="123" {...field} />
+                                <Input placeholder="123" {...field} required />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -234,64 +282,19 @@ export default function CheckoutPage() {
                         />
                       </div>
                     </div>
-
-                    <div className="pt-4">
-                      <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700">
-                        Place Order
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Order Summary */}
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {cartItems.length === 0 ? (
-                  <p className="text-gray-500">Your cart is empty</p>
-                ) : (
-                  <>
-                    {cartItems.map((item) => (
-                      <div key={item.product.id} className="flex justify-between py-2">
-                        <div className="flex space-x-2">
-                          <span className="font-medium">{item.quantity}x</span>
-                          <span>{item.product.name}</span>
-                        </div>
-                        <span className="font-medium">
-                          ${(item.product.price * item.quantity).toFixed(2)}
-                        </span>
-                      </div>
-                    ))}
-                    <Separator />
-                    <div className="flex justify-between font-semibold">
-                      <span>Subtotal</span>
-                      <span>${cartTotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-gray-600">
-                      <span>Shipping</span>
-                      <span>$5.99</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total</span>
-                      <span>${(cartTotal + 5.99).toFixed(2)}</span>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-              <CardFooter>
-                <p className="text-sm text-gray-500">
-                  By placing your order, you agree to our Terms of Service and Privacy Policy.
-                </p>
-              </CardFooter>
-            </Card>
-          </div>
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-indigo-600 hover:bg-indigo-700"
+                    disabled={loading}
+                  >
+                    {loading ? 'Processing...' : `Pay $${finalTotal.toFixed(2)}`}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

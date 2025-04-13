@@ -262,7 +262,7 @@ export default function ShopPage() {
                     <span>${cartTotal.toFixed(2)}</span>
                   </div>
                   <div className="px-4 pb-4">
-                    <Link href="/checkout" passHref>
+                    <Link href="/checkoutpage" passHref>
                       <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
                         Checkout
                       </Button>

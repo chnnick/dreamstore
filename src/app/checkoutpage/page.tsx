@@ -1,15 +1,14 @@
-// src/app/page.tsx
+// src/app/checkout/page.tsx
 "use client"
-import ShopPage from '@/pages/ShopPage';
 import { Footer } from '@/components/Footer';
 import Header from '@/components/Header';
+import Checkout from '@/pages/checkout';
 
-
-export default function Home() {
+export default function checkoutpage() {
   return (
     <main className="flex min-h-screen flex-col">
       <Header />
-      <ShopPage />
+      <Checkout />
       <Footer />
     </main>
   )
