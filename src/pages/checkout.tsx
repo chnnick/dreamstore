@@ -65,6 +65,14 @@ export default function CheckoutPage() {
       setCartItems(JSON.parse(savedCart));
     }
   }, []);
+  
+    // Add this useEffect to save cart changes to localStorage
+  useEffect(() => {
+    // Only save if there are items in the cart
+    if (cartItems.length > 0) {
+      localStorage.setItem('cart', JSON.stringify(cartItems));
+    }
+  }, [cartItems]); // This will run whenever cartItems changes
 
   const cartTotal = cartItems.reduce(
     (total, item) => total + item.product.price * item.quantity, 
@@ -90,7 +98,7 @@ export default function CheckoutPage() {
       localStorage.removeItem('cart');
       
       // Redirect to success page
-      router.push('/checkout/success');
+      router.push('/checkout/ordersuccess');
     } catch (error) {
       console.error('Payment failed:', error);
       alert('Payment failed. Please try again.');

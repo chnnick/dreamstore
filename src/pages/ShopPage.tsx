@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Menu } from "lucide-react";
 import Link from 'next/link';
 import {
   Sheet,
@@ -29,6 +29,15 @@ interface CartItem {
   product: Product;
   quantity: number;
 }
+
+// Navigation links
+const navLinks = [
+  { name: "Home", href: "/" },
+  { name: "Shop", href: "/shop" },
+  { name: "About", href: "/about" },
+  { name: "Contact", href: "/contact" },
+  { name: "Sign in", href:"/AuthPage"}
+];
 
 // Sample product data
 const products: Product[] = [
@@ -93,6 +102,7 @@ const products: Product[] = [
 export default function ShopPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Load cart from localStorage on component mount
   useEffect(() => {
@@ -152,7 +162,6 @@ export default function ShopPage() {
     );
   };
 
-
   const updateQuantity = (productId: number, newQuantity: number) => {
     if (newQuantity <= 0) {
       // Remove item from cart when quantity reaches 0
@@ -182,18 +191,42 @@ export default function ShopPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Header with Cart */}
+      {/* Header with Menu and Cart */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">GRAPE SHOP</h1>
-          
+          {/* Left side menu */}
+          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-8 w-8" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6 flex flex-col space-y-4">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="px-4 py-2 text-lg font-medium text-gray-900 hover:bg-gray-100 rounded-md"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
+          {/* Cart button */}
           <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" className="relative">
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 <span>Cart</span>
                 {totalItems > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-indigo-600">
+                  <Badge className="absolute -top-2 -right-2 bg-slate-500">
                     {totalItems}
                   </Badge>
                 )}
@@ -263,7 +296,7 @@ export default function ShopPage() {
                   </div>
                   <div className="px-4 pb-4">
                     <Link href="/checkoutpage" passHref>
-                      <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+                      <Button className="w-full bg-slate-500 hover:bg-slate-600">
                         Checkout
                       </Button>
                     </Link>
@@ -277,14 +310,6 @@ export default function ShopPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {/* Featured Banner */}
-        <div className="bg-indigo-100 rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-indigo-900 mb-2">Shop our GRAPES</h2>
-          <p className="text-indigo-800 mb-4">Discover our latest products for the spring season!</p>
-          <Button className="bg-indigo-600 hover:bg-indigo-700">
-            Shop Now
-          </Button>
-        </div>
             
         {/* Products Grid */}
         <h2 className="text-2xl font-semibold mb-6 text-gray-900">Featured Products</h2>
@@ -302,13 +327,13 @@ export default function ShopPage() {
                 <h3 className="text-lg font-medium">{product.name}</h3>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600 text-sm">{product.description}</p>
+                <p className="text-gray-500 text-sm">{product.description}</p>
               </CardContent>
               <CardFooter className="flex justify-between items-center">
                 <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
                 <Button 
                   onClick={() => addToCart(product)}
-                  className="bg-indigo-600 hover:bg-indigo-700"
+                  className="bg-slate-500 hover:bg-slate-600"
                 >
                   Add to Cart
                 </Button>
