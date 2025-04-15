@@ -36,7 +36,7 @@ const navLinks = [
   { name: "Shop", href: "/shop" },
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
-  { name: "Sign in", href:"/AuthPage"}
+  { name: "Sign in", href:"/login"}
 ];
 
 // Sample product data

@@ -58,7 +58,9 @@ const navLinks = [
   { name: "About Us", href: "/about" },
   { name: "Shop", href: "/shopgallerypage" },
   { name: "Booking", href: "/booking" },
-  { name: "Photo Gallery", href: "/gallery" }
+  { name: "Photo Gallery", href: "/gallery" },
+  { name: "Sign in", href:"/login"}
+
 ];
 
 export default function HomePage() {
