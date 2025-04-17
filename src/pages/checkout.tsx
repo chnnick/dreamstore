@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -15,6 +16,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+
+// Load your Stripe publishable key
+// Replace with your actual publishable key from the Stripe dashboard
+const stripePromise = loadStripe(process.env.STRIPE_PUBLISHABLE_KEY || 'pk_test_51RECkqIM92jQZxXyptz6E62tHW6Je8PueQlLxLTF8I98fQ8ZWnxZuDiuaffNX0slXfDBeYDNPjoUsAoPTcfC3Lpt00fdBLl8oh');
 
 // Type definitions
 interface Product {
@@ -29,22 +35,23 @@ interface CartItem {
   product: Product;
   quantity: number;
 }
+
 interface CheckoutFormValues {
   name: string;
   email: string;
   address: string;
   city: string;
   zip: string;
-  cardNumber: string;
-  expiryDate: string;
-  cvv: string;
 }
-export default function CheckoutPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
-  // Initialize react-hook-form
+// The CheckoutForm component that handles Stripe payment
+function CheckoutForm({ cartItems }: { cartItems: CartItem[] }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const stripe = useStripe();
+  const elements = useElements();
+  
   const form = useForm<CheckoutFormValues>({
     defaultValues: {
       name: '',
@@ -52,27 +59,8 @@ export default function CheckoutPage() {
       address: '',
       city: '',
       zip: '',
-      cardNumber: '',
-      expiryDate: '',
-      cvv: '',
     },
   });
-
-  // Load cart from localStorage on component mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
-    }
-  }, []);
-  
-    // Add this useEffect to save cart changes to localStorage
-  useEffect(() => {
-    // Only save if there are items in the cart
-    if (cartItems.length > 0) {
-      localStorage.setItem('cart', JSON.stringify(cartItems));
-    }
-  }, [cartItems]); // This will run whenever cartItems changes
 
   const cartTotal = cartItems.reduce(
     (total, item) => total + item.product.price * item.quantity, 
@@ -82,30 +70,220 @@ export default function CheckoutPage() {
   const shippingCost = 5.99;
   const finalTotal = cartTotal + shippingCost;
 
-  const onSubmit: SubmitHandler<CheckoutFormValues> = async (data) => {
+  const onSubmit = async (data: CheckoutFormValues) => {
+    if (!stripe || !elements) {
+      // Stripe.js hasn't loaded yet
+      return;
+    }
+
     setLoading(true);
+    setError(null);
 
     try {
-      // In a real app, you would:
-      // 1. Send payment info to payment processor (Stripe, PayPal, etc.)
-      // 2. Create order in your database
-      // 3. Empty the cart
+      // 1. Create a payment intent on the server
+      const response = await fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: Math.round(finalTotal * 100), // convert to cents
+          items: cartItems,
+          customer_details: data,
+        }),
+      });
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const { clientSecret } = await response.json();
+
+      // 2. Confirm the payment on the client
+      const cardElement = elements.getElement(CardElement);
       
-      // Clear cart in localStorage
-      localStorage.removeItem('cart');
-      
-      // Redirect to success page
-      router.push('/checkout/ordersuccess');
-    } catch (error) {
-      console.error('Payment failed:', error);
-      alert('Payment failed. Please try again.');
+      if (cardElement) {
+        const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: data.name,
+              email: data.email,
+              address: {
+                line1: data.address,
+                city: data.city,
+                postal_code: data.zip,
+              },
+            },
+          },
+        });
+
+        if (error) {
+          setError(error.message || 'An error occurred during payment');
+        } else if (paymentIntent.status === 'succeeded') {
+          // Payment succeeded
+          // Clear cart in localStorage
+          localStorage.removeItem('cart');
+          
+          // Redirect to success page
+          router.push('/checkout/success');
+        }
+      }
+    } catch (err) {
+      console.error('Payment error:', err);
+      setError('An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Shipping Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Shipping Information</h3>
+          
+          <div className="grid grid-cols-1 gap-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} required />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} required />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <Input {...field} required />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>City</FormLabel>
+                    <FormControl>
+                      <Input {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="zip"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ZIP Code</FormLabel>
+                    <FormControl>
+                      <Input {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        </div>
+        
+        <Separator />
+        
+        {/* Payment Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Payment Information</h3>
+          
+          <div className="p-4 border rounded-md">
+            <CardElement 
+              options={{
+                style: {
+                  base: {
+                    fontSize: '16px',
+                    color: '#424770',
+                    '::placeholder': {
+                      color: '#aab7c4',
+                    },
+                  },
+                  invalid: {
+                    color: '#9e2146',
+                  },
+                },
+              }}
+            />
+          </div>
+          
+          {error && (
+            <div className="text-red-500 text-sm p-2">
+              {error}
+            </div>
+          )}
+        </div>
+        
+        <Button 
+          type="submit" 
+          className="w-full bg-indigo-600 hover:bg-indigo-700"
+          disabled={loading || !stripe}
+        >
+          {loading ? 'Processing...' : `Pay $${finalTotal.toFixed(2)}`}
+        </Button>
+      </form>
+    </Form>
+  );
+}
+
+export default function CheckoutPage() {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  // Load cart from localStorage on component mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      setCartItems(JSON.parse(savedCart));
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      localStorage.setItem('cart', JSON.stringify(cartItems));
+    }
+  }, [cartItems]);
+
+  const cartTotal = cartItems.reduce(
+    (total, item) => total + item.product.price * item.quantity, 
+    0
+  );
+
+  const shippingCost = 5.99;
+  const finalTotal = cartTotal + shippingCost;
 
   return (
     <div className="bg-gray-50 min-h-screen py-8">
@@ -158,149 +336,9 @@ export default function CheckoutPage() {
               <CardTitle>Payment Details</CardTitle>
             </CardHeader>
             <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Shipping Information */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Shipping Information</h3>
-                    
-                    <div className="grid grid-cols-1 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                              <Input {...field} required />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input type="email" {...field} required />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="address"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Address</FormLabel>
-                            <FormControl>
-                              <Input {...field} required />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="city"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>City</FormLabel>
-                              <FormControl>
-                                <Input {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="zip"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>ZIP Code</FormLabel>
-                              <FormControl>
-                                <Input {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  {/* Payment Information */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Payment Information</h3>
-                    
-                    <div className="grid grid-cols-1 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="cardNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Card Number</FormLabel>
-                            <FormControl>
-                              <Input placeholder="1234 5678 9012 3456" {...field} required />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="expiryDate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Expiry Date</FormLabel>
-                              <FormControl>
-                                <Input placeholder="MM/YY" {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="cvv"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>CVV</FormLabel>
-                              <FormControl>
-                                <Input placeholder="123" {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-indigo-600 hover:bg-indigo-700"
-                    disabled={loading}
-                  >
-                    {loading ? 'Processing...' : `Pay $${finalTotal.toFixed(2)}`}
-                  </Button>
-                </form>
-              </Form>
+              <Elements stripe={stripePromise}>
+                <CheckoutForm cartItems={cartItems} />
+              </Elements>
             </CardContent>
           </Card>
         </div>
