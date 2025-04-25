@@ -1,6 +1,6 @@
 // src/app/page.tsx
 "use client"
-import LoginPage from '@/pages/loginpage';
+import LoginPage from '@/pages/LoginPage';
 import { Footer } from '@/components/Footer';
 import Header from '@/components/Header';
 
