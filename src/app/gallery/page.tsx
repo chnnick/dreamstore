@@ -5,7 +5,7 @@ import { Footer } from '@/components/Footer';
 import Header from '@/components/Header';
 
 
-export default function Home() {
+export default function GalleryPage() {
   return (
     <main className="flex min-h-screen flex-col">
       <Header />

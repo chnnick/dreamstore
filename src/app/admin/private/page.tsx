@@ -1,6 +1,7 @@
+// Page for riley to be in when he is logged in
 import { redirect } from 'next/navigation'
 
-import { createClient } from '../../../utils/supabase/server'
+import { createClient } from '../../../../utils/supabase/server'
 
 export default async function PrivatePage() {
   const supabase = await createClient()

@@ -54,48 +54,6 @@ const products: Product[] = [
     price: 59.99,
     description: "GRAPE GRAPE",
     imageUrl: "/images/grape.jpeg"
-  },
-  {
-    id: 3,
-    name: "GRAPE GRAPE",
-    price: 89.99,
-    description: "GRAPE GRAPE",
-    imageUrl: "/images/grape.jpeg"
-  },
-  {
-    id: 4,
-    name: "GRAPE GRAPE",
-    price: 34.99,
-    description: "GRAPE GRAPE",
-    imageUrl: "/images/grape.jpeg"
-  },
-  {
-    id: 5,
-    name: "GRAPE GRAPE",
-    price: 24.99,
-    description: "GRAPE GRAPE",
-    imageUrl: "/images/grape.jpeg"
-  },
-  {
-    id: 6,
-    name: "GRAPE GRAPE",
-    price: 59.99,
-    description: "GRAPE GRAPE",
-    imageUrl: "/images/grape.jpeg"
-  },
-  {
-    id: 7,
-    name: "GRAPE GRAPE",
-    price: 89.99,
-    description: "GRAPE GRAPE",
-    imageUrl: "/images/grape.jpeg"
-  },
-  {
-    id: 8,
-    name: "GRAPE GRAPE",
-    price: 34.99,
-    description: "GRAPE GRAPE",
-    imageUrl: "/images/grape.jpeg"
   }
 ];
 
