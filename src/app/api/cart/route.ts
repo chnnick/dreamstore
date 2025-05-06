@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    // Here you would normally save to a database
+    // save to a database
     // For demo purposes, we're just acknowledging receipt
     
     // If you had a user authentication system:
