@@ -1,27 +1,26 @@
 "use client"
-
-import Link from 'next/link';
+import Link from "next/link";
 
 const navLinks = [
-    { name: "Shop", href: "/store" },
-    { name: "Gallery", href: "/gallery" },
-    { name: "About", href: "/about" }
+    { name: "Home", href: "/" },
+    { name: "Gallery", href: "/gallery" }
 ];
 
-export default function Navbar() {
+export default function NavBar() {
     return (
-        <nav className="md:flex md:flex-col md:items-start md:justify-center md:space-y-6 md:p-8
-                       sm:static sm:h-auto sm:flex-row sm:items-center sm:justify-center sm:space-y-0 sm:space-x-6 sm:p-4 sm:w-full">
-            <p>DREAMCORE.US</p>
-            {navLinks.map((link) => (
-                <Link 
-                    key={link.name} 
-                    href={link.href}
-                    className="text-2xl hover:scale-150 transition-transform duration-200"
-                >
-                    {link.name}
-                </Link>
-            ))}
+        <nav className="flex flex-col md:flex-rowitems-center justify-between">
+            <p className="text-3xl">DREAMCORE.US</p>
+            <div className="flex flex-row items-center justify-center space-x-6">
+              {navLinks.map((link) => (
+                  <Link 
+                      key={link.name} 
+                      href={link.href}
+                      className="text-2xl hover:scale-150 transition-transform duration-200"
+                  >
+                      {link.name}
+                  </Link>
+              ))}
+            </div>
         </nav>
-    );
+    )
 }
