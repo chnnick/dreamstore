@@ -36,16 +36,16 @@ export default function HomePage() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
-          className="w-full text-5xl md:text-7xl lg:text-7xl xl:text-9xl "
+          className="w-full text-5xl md:text-7xl lg:text-7xl xl:text-9xl"
         >
           <AnimatedLogo />
-          <nav className="md:flex md:flex-col md:items-start md:justify-center md:space-y-6 md:p-8
-                        static h-auto flex-row items-center justify-center space-y-0 space-x-6 p-4 w-full">
+          <nav className="mt-10 md:flex md:flex-col md:items-start md:justify-center md:space-y-6
+                        static h-auto flex-row items-center justify-center space-y-0 space-x-6 py-4 w-full">
               {navLinks.map((link) => (
                   <Link 
                       key={link.name} 
                       href={link.href}
-                      className="text-3xl md:text-5xl lg:text-7xl hover:scale-150 transition-transform duration-200"
+                      className="text-3xl md:text-5xl lg:text-7xl hover:scale-120 transition-transform duration-200"
                   >
                       {link.name}
                   </Link>
