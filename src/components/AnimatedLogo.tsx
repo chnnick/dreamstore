@@ -42,7 +42,7 @@ export default function AnimatedLogo() {
 
     return (
         <div>
-            <span className={`text-4xl ${typewriterStyle}`} >{typewriterText}<span className="typecursor">|</span></span>
+            <span className={`${typewriterStyle}`} >{typewriterText}<span className="typecursor">|</span></span>
         </div>
     );
 }

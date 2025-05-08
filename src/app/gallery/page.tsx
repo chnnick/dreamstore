@@ -30,11 +30,10 @@ export default function GalleryPage() {
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <header className="p-4 flex justify-between items-center">
-        <NavBar />
-        <CartButton />
-      </header>
+    <div className="min-h-screen">
+    <header className="py-4 px-15 w-full">
+      <NavBar />
+    </header>
       <main className="p-4">
         <h1 className="text-2xl mb-4">Gallery</h1>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

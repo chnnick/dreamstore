@@ -6,6 +6,7 @@ import CartButton from '@/components/CartButton';
 import { motion, AnimatePresence } from "framer-motion";
 import Image from 'next/image';
 import Link from 'next/link';
+import AnimatedLogo from '@/components/AnimatedLogo';
 
 const images = [
   { src: "/product-photos/product1.png", alt: "First image of riley's hair product" }, 
@@ -28,26 +29,23 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-black text-white">
+    <div className="flex flex-col md:flex-row min-h-screen">
       {/* Left Navigation Section (1/3) */}
       <div className="w-full md:w-1/3 p-8 lg:p-16 flex flex-col items-center justify-center">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
-          className="w-full"
+          className="w-full text-5xl md:text-7xl lg:text-7xl xl:text-9xl "
         >
-          <div className="flex justify-between items-center mb-8">
-            <p className="text-3xl">DREAMCORE.US</p>
-            <CartButton />
-          </div>
+          <AnimatedLogo />
           <nav className="md:flex md:flex-col md:items-start md:justify-center md:space-y-6 md:p-8
                         static h-auto flex-row items-center justify-center space-y-0 space-x-6 p-4 w-full">
               {navLinks.map((link) => (
                   <Link 
                       key={link.name} 
                       href={link.href}
-                      className="text-2xl hover:scale-150 transition-transform duration-200"
+                      className="text-3xl md:text-5xl lg:text-7xl hover:scale-150 transition-transform duration-200"
                   >
                       {link.name}
                   </Link>

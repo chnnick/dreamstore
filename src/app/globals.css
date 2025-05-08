@@ -76,6 +76,8 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --bg-color: #020a06;
+  --text-color: #cfcfaf;
 }
 
 .dark {
@@ -118,6 +120,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: var(--bg-color);
+    color: var(--text-color);
   }
 }
 
@@ -130,3 +134,9 @@
     opacity: 0;
   }
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add any other global styles below */
