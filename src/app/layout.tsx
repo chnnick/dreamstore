@@ -17,11 +17,8 @@ export const metadata: Metadata = {
   description: "Limited Access...",
   icons: {
     icon: [
-      { url: '/lake.jpg', type: 'image/jpeg' },
-      { url: '/favicon.ico', type: 'image/x-icon' }
+      { url: '/lake.jpg', type: 'image/jpeg' }
     ],
-    shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
   }
 };
 

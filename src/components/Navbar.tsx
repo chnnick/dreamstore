@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link";
 import AnimatedLogo from "./AnimatedLogo";
+import CartButton from "./CartButton";
 
 const navLinks = [
     { name: "Store", href: "/store" },
@@ -28,6 +29,7 @@ export default function NavBar() {
                         {link.name}
                     </Link>
                 ))}
+                <CartButton />
             </div>
         </nav>
     )

@@ -90,20 +90,25 @@ export default function CartButton() {
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" className="relative">
+        <Button variant="outline" className="bg-[var(--bg-color)] relative">
           <ShoppingCart className="h-5 w-5 mr-2" />
           <span>Cart</span>
           {totalItems > 0 && (
-            <Badge className="absolute -top-2 -right-2 bg-slate-500">
+            <Badge 
+              key={totalItems}
+              className="absolute -top-2 -right-2 bg-[var(--text-color)] text-[var(--bg-color)] animate-badge-grow"
+            >
               {totalItems}
             </Badge>
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md">
+      <SheetContent className="bg-[var(--bg-color)] w-full sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>Shopping Cart</SheetTitle>
-          <SheetDescription>
+          <SheetTitle className="text-[var(--text-color)]">Shopping Cart</SheetTitle>
+          <SheetDescription
+            className="text-[var(--text-color)]"
+          >
             {cartItems.length === 0 
               ? "Your cart is empty" 
               : `You have ${totalItems} item(s) in your cart`}
@@ -116,14 +121,14 @@ export default function CartButton() {
               <div className="flex items-center space-x-4">
                 <div className="h-16 w-16 relative rounded overflow-hidden">
                   <img 
-                    src={item.product.imageUrl} 
+                    src={`${item.product.imageUrl}/product1.png`}
                     alt={item.product.name}
                     className="object-cover absolute inset-0 h-full w-full"
                   />
                 </div>
                 <div>
                   <h3 className="text-sm font-medium">{item.product.name}</h3>
-                  <p className="text-sm text-gray-500">${item.product.price.toFixed(2)}</p>
+                  <p className="text-sm ">${item.product.price.toFixed(2)}</p>
                 </div>
               </div>
               
@@ -131,6 +136,7 @@ export default function CartButton() {
                 <Button 
                   variant="outline" 
                   size="sm"
+                  className="bg-[var(--bg-color)] text-[var(--text-color)] border-[var(--text-color)] hover:bg-[var(--text-color)] hover:text-[var(--bg-color)]"
                   onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                 >
                   -
@@ -139,6 +145,7 @@ export default function CartButton() {
                 <Button 
                   variant="outline" 
                   size="sm"
+                  className="bg-[var(--bg-color)] text-[var(--text-color)] border-[var(--text-color)] hover:bg-[var(--text-color)] hover:text-[var(--bg-color)]"
                   onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                 >
                   +
@@ -147,7 +154,7 @@ export default function CartButton() {
                   variant="ghost" 
                   size="sm"
                   onClick={() => removeFromCart(item.product.id)}
-                  className="text-red-500"
+                  className="hover:scale-110 transition-transform duration-200 bg-[var(--bg-color)] hover:bg-transparent hover:text-red-500 text-red-500"
                 >
                   Remove
                 </Button>
@@ -164,7 +171,9 @@ export default function CartButton() {
             </div>
             <div className="px-4 pb-4">
               <Link href="/store/checkout" passHref>
-                <Button className="w-full bg-slate-500 hover:bg-slate-600">
+                <Button 
+                  className="w-full border border-[var(--text-color)] bg-[var(--bg-color)] text-[var(--text-color)] border-[var(--text-color)] hover:bg-[var(--text-color)] hover:text-[var(--bg-color)]"
+                >
                   Checkout
                 </Button>
               </Link>
