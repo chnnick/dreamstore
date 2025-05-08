@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import CartButton from "@/components/CartButton";
 import NavBar from "@/components/Navbar";
 import { dispatchCartUpdate } from '@/lib/events';
+import { Footer } from '@/components/Footer';
 
 // Product type definition
 interface Product {
@@ -49,13 +50,12 @@ export default function ShopPage() {
       {/* Header with Menu and Cart */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <CartButton />
           <NavBar />
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Products Grid */}
         <h2 className="text-2xl font-semibold mb-6 text-gray-900">Featured Products</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -93,7 +93,8 @@ export default function ShopPage() {
             </Card>
           ))}
         </div>
-      </main>
+      </div>
+      <Footer />
     </div>
   );
 }
