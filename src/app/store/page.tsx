@@ -24,7 +24,7 @@ const products: Product[] = [
     stocked: true,
     size: 20,
     price: 24.99,
-    description: "Created by barbers for barbers, this is a high quality, easy to use, and affordable texture powder.",
+    description: "Created by barbers for barbers.",
     imageUrl: "/product1-photos"
   }, 
   {
@@ -82,27 +82,27 @@ export default function ShopPage() {
       <main className="flex-grow">
         <div className="flex flex-col md:flex-row gap-20 max-w-7xl px-10">
           <div id="productinfo" className="w-full md:w-1/2">
-            <div className="h-[300px]">
-              <h2 className="text-9xl font-semibold leading-tight">{currentProduct.name}</h2>
+            <div className="h-[220px]">
+              <h2 className="text-8xl font-semibold leading-tight">{currentProduct.name}</h2>
             </div>
             <div className="flex flex-col items-center h-[60px] my-3">
               <Button 
-                className="w-full h-[60px] text-3xl bg-[var(--text-color)] text-[var(--bg-color)] hover:scale-110 transition-transform hover:bg-[var(--text-color)] hover:text-[var(--bg-color)]"
+                className="w-full h-[50px] text-3xl bg-[var(--text-color)] text-[var(--bg-color)] hover:scale-110 transition-transform hover:bg-[var(--text-color)] hover:text-[var(--bg-color)]"
                 onClick={() => addToCart(currentProduct)}>
                 Add to Cart
               </Button>
             </div>
             <div className="space-y-6">
-              <div className="h-[60px]">
+              <div className="h-[50px]">
                 <p className="text-5xl">${currentProduct.price.toFixed(2)}</p>
               </div>
-              <div className="h-[60px]">
+              <div className="h-[50px]">
                 <p className="text-5xl">{currentProduct.stocked ? "In Stock" : "Out of Stock"}</p>
               </div>
-              <div className="h-[60px]">
+              <div className="h-[50px]">
                 <p className="text-5xl">{currentProduct.size} OZ</p>
               </div>
-              <div className="h-[200px]">
+              <div className="h-[100px]">
                 <p className="text-5xl">{currentProduct.description}</p>
               </div>
             </div>

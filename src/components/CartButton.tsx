@@ -101,9 +101,9 @@ export default function CartButton() {
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" className="bg-[var(--bg-color)] relative">
+        <Button variant="outline" className="h-[50px] bg-[var(--bg-color)] relative">
           <ShoppingCart className="h-5 w-5 mr-2" />
-          <span>Cart</span>
+          <span className="text-4xl" >Cart</span>
           {totalItems > 0 && (
             <Badge 
               key={totalItems}
