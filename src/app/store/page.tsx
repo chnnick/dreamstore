@@ -6,6 +6,7 @@ import NavBar from "@/components/Navbar";
 import { dispatchCartUpdate } from '@/lib/events';
 import { Footer } from '@/components/Footer';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Product {
   id: number;
@@ -81,7 +82,13 @@ export default function ShopPage() {
 
       <main className="flex-grow">
         <div className="flex flex-col md:flex-row gap-20 max-w-7xl px-10">
-          <div id="productinfo" className="w-full md:w-1/2">
+          <motion.div 
+            id="productinfo" 
+            className="w-full md:w-1/2"
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <div className="h-[220px]">
               <h2 className="text-8xl font-semibold leading-tight">{currentProduct.name}</h2>
             </div>
@@ -106,8 +113,14 @@ export default function ShopPage() {
                 <p className="text-5xl">{currentProduct.description}</p>
               </div>
             </div>
-          </div>
-          <div className="flex flex-row w-full md:w-1/2 justify-center items-center relative">
+          </motion.div>
+          <motion.div 
+            id="productimage" 
+            className="flex flex-row w-full md:w-1/2 justify-center items-center relative"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <Button 
               onClick={goToPreviousProduct}
               className="absolute left-0 z-10 hover:scale-105 transition-transform"
@@ -128,7 +141,7 @@ export default function ShopPage() {
             >
               <ChevronRight className="w-6 h-6" />
             </Button>
-          </div>
+          </motion.div>
         </div>
       </main>
 
