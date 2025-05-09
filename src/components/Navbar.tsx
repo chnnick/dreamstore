@@ -14,7 +14,7 @@ export default function NavBar() {
             <div className="flex items-center">
                 <Link 
                     href="/"
-                    className="text-2xl hover:scale-110 transition-transform duration-200"
+                    className="text-4xl hover:scale-110 transition-transform duration-200"
                 >
                     <AnimatedLogo />
                 </Link>
@@ -24,7 +24,7 @@ export default function NavBar() {
                     <Link 
                         key={link.name} 
                         href={link.href}
-                        className="text-2xl hover:scale-110 transition-transform duration-200"
+                        className="text-4xl hover:scale-110 transition-transform duration-200"
                     >
                         {link.name}
                     </Link>

@@ -28,12 +28,16 @@ interface CartItem {
 export default function CartButton() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isFirstClick, setIsFirstClick] = useState(true);
 
   const loadCart = () => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
       setCartItems(JSON.parse(savedCart));
     }
+    // Check if this is the first time adding to cart
+    const hasAddedToCart = localStorage.getItem('hasAddedToCart');
+    setIsFirstClick(!hasAddedToCart);
   };
 
   // Load cart from localStorage on component mount
@@ -87,6 +91,13 @@ export default function CartButton() {
     0
   );
 
+  const addToCart = () => {
+    if (isFirstClick) {
+      localStorage.setItem('hasAddedToCart', 'true');
+      setIsFirstClick(false);
+    }
+  };
+
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
       <SheetTrigger asChild>
@@ -96,7 +107,9 @@ export default function CartButton() {
           {totalItems > 0 && (
             <Badge 
               key={totalItems}
-              className="absolute -top-2 -right-2 bg-[var(--text-color)] text-[var(--bg-color)] animate-badge-grow"
+              className={`absolute -top-2 -right-2 bg-[var(--text-color)] text-[var(--bg-color)] ${
+                isFirstClick ? 'animate-badge-grow-first' : 'animate-badge-grow'
+              }`}
             >
               {totalItems}
             </Badge>
@@ -105,9 +118,9 @@ export default function CartButton() {
       </SheetTrigger>
       <SheetContent className="bg-[var(--bg-color)] w-full sm:max-w-md">
         <SheetHeader>
-          <SheetTitle className="text-[var(--text-color)]">Shopping Cart</SheetTitle>
+          <SheetTitle className="text-4xl text-[var(--text-color)]">Shopping Cart</SheetTitle>
           <SheetDescription
-            className="text-[var(--text-color)]"
+            className="text-3xl text-[var(--text-color)]"
           >
             {cartItems.length === 0 
               ? "Your cart is empty" 

@@ -9,8 +9,8 @@ import Link from 'next/link';
 import AnimatedLogo from '@/components/AnimatedLogo';
 
 const images = [
-  { src: "/product-photos/product1.png", alt: "First image of riley's hair product" }, 
-  { src: "/product-photos/product2.png", alt: "Second image of riley's hair product" }
+  { src: "/product1-photos/product1.png", alt: "First image of riley's hair product" }, 
+  { src: "/product1-photos/product2.png", alt: "Second image of riley's hair product" }
 ];
 
 const navLinks = [
