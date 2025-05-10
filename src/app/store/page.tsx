@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import NavBar from "@/components/Navbar";
-import { dispatchCartUpdate } from '@/lib/events';
 import { Footer } from '@/components/Footer';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { useCartStore } from '@/store/cartStore';
 import { motion } from 'framer-motion';
 
 interface Product {
@@ -43,24 +43,7 @@ const products: Product[] = [
 export default function ShopPage() {
   const [currentProduct, setCurrentProduct] = useState<Product>(products[0]);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
-
-  const addToCart = (product: Product) => {
-    const savedCart = localStorage.getItem('cart');
-    const cartItems = savedCart ? JSON.parse(savedCart) : [];
-
-    const existingItemIndex = cartItems.findIndex(
-      (item: any) => item.product.id === product.id
-    );
-
-    if (existingItemIndex >= 0) {
-      cartItems[existingItemIndex].quantity += 1;
-    } else {
-      cartItems.push({ product, quantity: 1 });
-    }
-
-    localStorage.setItem('cart', JSON.stringify(cartItems));
-    dispatchCartUpdate();
-  };
+  const addItem = useCartStore(state => state.addItem);
 
   const goToPreviousProduct = () => {
     setSlideDirection('right');
@@ -76,12 +59,11 @@ export default function ShopPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="py-4 px-15 w-full">
-        <NavBar />
-      </header>
-
-      <main className="flex-grow">
-        <div className="flex flex-col md:flex-row gap-20 max-w-7xl px-10">
+      <main >
+        <header className="py-4 px-15 w-full">
+          <NavBar />
+        </header>
+        <div className="flex flex-col md:flex-row gap-20 max-w-7xl py-5 px-10">
           <motion.div 
             id="productinfo" 
             className="w-full md:w-1/2"
@@ -89,27 +71,27 @@ export default function ShopPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="h-[220px]">
-              <h2 className="text-8xl font-semibold leading-tight">{currentProduct.name}</h2>
+            <div className="h-[300px]">
+              <h2 className="text-9xl font-semibold leading-tight">{currentProduct.name}</h2>
             </div>
             <div className="flex flex-col items-center h-[60px] my-3">
               <Button 
-                className="w-full h-[50px] text-3xl bg-[var(--text-color)] text-[var(--bg-color)] hover:scale-110 transition-transform hover:bg-[var(--text-color)] hover:text-[var(--bg-color)]"
-                onClick={() => addToCart(currentProduct)}>
+                className="w-full h-[60px] text-3xl bg-[var(--text-color)] text-[var(--bg-color)] hover:scale-110 transition-transform hover:bg-[var(--text-color)] hover:text-[var(--bg-color)]"
+                onClick={() => addItem(currentProduct)}>
                 Add to Cart
               </Button>
             </div>
             <div className="space-y-6">
-              <div className="h-[50px]">
+              <div className="h-[60px]">
                 <p className="text-5xl">${currentProduct.price.toFixed(2)}</p>
               </div>
-              <div className="h-[50px]">
+              <div className="h-[60px]">
                 <p className="text-5xl">{currentProduct.stocked ? "In Stock" : "Out of Stock"}</p>
               </div>
-              <div className="h-[50px]">
+              <div className="h-[60px]">
                 <p className="text-5xl">{currentProduct.size} OZ</p>
               </div>
-              <div className="h-[100px]">
+              <div className="h-[200px]">
                 <p className="text-5xl">{currentProduct.description}</p>
               </div>
             </div>
@@ -143,11 +125,10 @@ export default function ShopPage() {
             </Button>
           </motion.div>
         </div>
+        <footer className="w-full mt-auto">
+          <Footer />
+        </footer>
       </main>
-
-      <footer className="w-full mt-auto">
-        <Footer />
-      </footer>
     </div>
   );
 }

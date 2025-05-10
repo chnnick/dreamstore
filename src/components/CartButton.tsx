@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart } from "lucide-react";
 import Link from 'next/link';
-import { CART_UPDATED_EVENT } from '@/lib/events';
+import { useCartStore } from '@/store/cartStore';
 import {
   Sheet,
   SheetContent,
@@ -15,101 +15,38 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-interface CartItem {
-  product: {
-    id: number;
-    name: string;
-    price: number;
-    imageUrl: string;
-  };
-  quantity: number;
-}
-
 export default function CartButton() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isFirstClick, setIsFirstClick] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+  const { items, removeItem, updateQuantity, getTotalItems, getTotalPrice } = useCartStore();
 
-  const loadCart = () => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
-    }
-    // Check if this is the first time adding to cart
-    const hasAddedToCart = localStorage.getItem('hasAddedToCart');
-    setIsFirstClick(!hasAddedToCart);
-  };
-
-  // Load cart from localStorage on component mount
   useEffect(() => {
-    loadCart();
+    setIsMounted(true);
   }, []);
 
-  // Listen for cart update events
-  useEffect(() => {
-    const handleCartUpdate = () => {
-      loadCart();
-    };
-
-    window.addEventListener(CART_UPDATED_EVENT, handleCartUpdate);
-    return () => window.removeEventListener(CART_UPDATED_EVENT, handleCartUpdate);
-  }, []);
-
-  // Save cart to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cartItems));
-  }, [cartItems]);
-
-  const removeFromCart = (productId: number) => {
-    setCartItems(prevItems => 
-      prevItems.filter(item => item.product.id !== productId)
+  // Don't render anything until we're on the client side
+  if (!isMounted) {
+    return (
+      <Button variant="outline" className="h-[50px] bg-[var(--bg-color)] relative">
+        <ShoppingCart className="h-5 w-5 mr-2" />
+        <span className="text-4xl">Cart</span>
+      </Button>
     );
-  };
+  }
 
-  const updateQuantity = (productId: number, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-    
-    setCartItems(prevItems => 
-      prevItems.map(item => 
-        item.product.id === productId 
-          ? { ...item, quantity: newQuantity } 
-          : item
-      )
-    );
-  };
-
-  const cartTotal = cartItems.reduce(
-    (total, item) => total + item.product.price * item.quantity, 
-    0
-  );
-
-  const totalItems = cartItems.reduce(
-    (total, item) => total + item.quantity,
-    0
-  );
-
-  const addToCart = () => {
-    if (isFirstClick) {
-      localStorage.setItem('hasAddedToCart', 'true');
-      setIsFirstClick(false);
-    }
-  };
+  const totalItems = getTotalItems();
+  const cartTotal = getTotalPrice();
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" className="h-[50px] bg-[var(--bg-color)] relative">
           <ShoppingCart className="h-5 w-5 mr-2" />
-          <span className="text-4xl" >Cart</span>
+          <span className="text-4xl">Cart</span>
           {totalItems > 0 && (
             <Badge 
               key={totalItems}
-              className={`absolute -top-2 -right-2 bg-[var(--text-color)] text-[var(--bg-color)] ${
-                isFirstClick ? 'animate-badge-grow-first' : 'animate-badge-grow'
-              }`}
+              className="absolute -top-2 -right-2 bg-[var(--text-color)] text-[var(--bg-color)] animate-badge-grow"
             >
               {totalItems}
             </Badge>
@@ -122,14 +59,14 @@ export default function CartButton() {
           <SheetDescription
             className="text-3xl text-[var(--text-color)]"
           >
-            {cartItems.length === 0 
+            {items.length === 0 
               ? "Your cart is empty" 
               : `You have ${totalItems} item(s) in your cart`}
           </SheetDescription>
         </SheetHeader>
         
         <div className="mt-6 space-y-4 px-4">
-          {cartItems.map((item) => (
+          {items.map((item) => (
             <div key={item.product.id} className="flex justify-between items-center border-b pb-4">
               <div className="flex items-center space-x-4">
                 <div className="h-16 w-16 relative rounded overflow-hidden">
@@ -166,7 +103,7 @@ export default function CartButton() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => removeFromCart(item.product.id)}
+                  onClick={() => removeItem(item.product.id)}
                   className="hover:scale-110 transition-transform duration-200 bg-[var(--bg-color)] hover:bg-transparent hover:text-red-500 text-red-500"
                 >
                   Remove
@@ -176,7 +113,7 @@ export default function CartButton() {
           ))}
         </div>
         
-        {cartItems.length > 0 && (
+        {items.length > 0 && (
           <div className="mt-6 space-y-4">
             <div className="flex justify-between text-lg font-medium px-5">
               <span>Total</span>

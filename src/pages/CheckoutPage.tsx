@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { useCartStore } from '@/store/cartStore';
 
 const stripePromise = loadStripe(process.env.STRIPE_PUBLISHABLE_KEY || 'pk_test_51RECkqIM92jQZxXyptz6E62tHW6Je8PueQlLxLTF8I98fQ8ZWnxZuDiuaffNX0slXfDBeYDNPjoUsAoPTcfC3Lpt00fdBLl8oh');
 
@@ -48,6 +49,7 @@ function CheckoutForm({ cartItems }: { cartItems: CartItem[] }) {
   const router = useRouter();
   const stripe = useStripe();
   const elements = useElements();
+  const clearCart = useCartStore(state => state.clearCart);
   
   const form = useForm<CheckoutFormValues>({
     defaultValues: {
@@ -115,9 +117,7 @@ function CheckoutForm({ cartItems }: { cartItems: CartItem[] }) {
           setError(error.message || 'An error occurred during payment');
         } else if (paymentIntent.status === 'succeeded') {
           // Payment succeeded
-          // Clear cart in localStorage
-          localStorage.removeItem('cart');
-          
+          clearCart(); // Clear cart using Zustand store
           router.push('/checkoutsuccess');
         }
       }
@@ -245,7 +245,7 @@ function CheckoutForm({ cartItems }: { cartItems: CartItem[] }) {
         
         <Button 
           type="submit" 
-          className="w-full bg-white  text-black hover:bg-gray-300 hover: transition duration-200"
+          className="w-full bg-white text-black hover:bg-gray-300 hover: transition duration-200"
           disabled={loading || !stripe}
         >
           {loading ? 'Processing...' : `Pay $${finalTotal.toFixed(2)}`}
@@ -256,35 +256,18 @@ function CheckoutForm({ cartItems }: { cartItems: CartItem[] }) {
 }
 
 export default function CheckoutPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const router = useRouter();
-  // Load cart from localStorage on component mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
-    }
-  }, []);
+  const items = useCartStore(state => state.items);
+  const getTotalItems = useCartStore(state => state.getTotalItems);
+  const getTotalPrice = useCartStore(state => state.getTotalPrice);
 
-  // Save cart to localStorage whenever it changes
-  useEffect(() => {
-    if (cartItems.length > 0) {
-      localStorage.setItem('cart', JSON.stringify(cartItems));
-    }
-  }, [cartItems]);
-
-  const cartTotal = cartItems.reduce(
-    (total, item) => total + item.product.price * item.quantity, 
-    0
-  );
-
+  const cartTotal = getTotalPrice();
   const shippingCost = 5.99;
   const finalTotal = cartTotal + shippingCost;
 
   return (
     <div className="bg-black min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4">
-
         <div className="flex items-center justify-between mb-8 bg-transparent">
           <Button variant="outline" className="bg-transparent" onClick={() => router.push("/store")}>←</Button>
           <h1 className="text-3xl font-bold text-center flex-grow">Checkout</h1>
@@ -298,7 +281,7 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {cartItems.map((item) => (
+                {items.map((item) => (
                   <div key={item.product.id} className="flex justify-between">
                     <div>
                       <p className="font-medium">{item.product.name}</p>
@@ -337,7 +320,7 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent>
               <Elements stripe={stripePromise}>
-                <CheckoutForm cartItems={cartItems} />
+                <CheckoutForm cartItems={items} />
               </Elements>
             </CardContent>
           </Card>
