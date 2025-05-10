@@ -18,11 +18,8 @@ import { Separator } from "@/components/ui/separator";
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 
-// Load your Stripe publishable key
-// Replace with your actual publishable key from the Stripe dashboard
 const stripePromise = loadStripe(process.env.STRIPE_PUBLISHABLE_KEY || 'pk_test_51RECkqIM92jQZxXyptz6E62tHW6Je8PueQlLxLTF8I98fQ8ZWnxZuDiuaffNX0slXfDBeYDNPjoUsAoPTcfC3Lpt00fdBLl8oh');
 
-// Type definitions
 interface Product {
   id: number;
   name: string;
@@ -44,7 +41,7 @@ interface CheckoutFormValues {
   zip: string;
 }
 
-// The CheckoutForm component that handles Stripe payment
+// for stripe
 function CheckoutForm({ cartItems }: { cartItems: CartItem[] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,8 +118,7 @@ function CheckoutForm({ cartItems }: { cartItems: CartItem[] }) {
           // Clear cart in localStorage
           localStorage.removeItem('cart');
           
-          // Redirect to success page
-          router.push('/checkout/success');
+          router.push('/checkoutsuccess');
         }
       }
     } catch (err) {
@@ -135,7 +131,7 @@ function CheckoutForm({ cartItems }: { cartItems: CartItem[] }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 ">
         {/* Shipping Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Shipping Information</h3>
@@ -249,7 +245,7 @@ function CheckoutForm({ cartItems }: { cartItems: CartItem[] }) {
         
         <Button 
           type="submit" 
-          className="w-full bg-indigo-600 hover:bg-indigo-700"
+          className="w-full bg-white  text-black hover:bg-gray-300 hover: transition duration-200"
           disabled={loading || !stripe}
         >
           {loading ? 'Processing...' : `Pay $${finalTotal.toFixed(2)}`}
@@ -261,7 +257,7 @@ function CheckoutForm({ cartItems }: { cartItems: CartItem[] }) {
 
 export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
+  const router = useRouter();
   // Load cart from localStorage on component mount
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -286,13 +282,17 @@ export default function CheckoutPage() {
   const finalTotal = cartTotal + shippingCost;
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8">
+    <div className="bg-black min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8 text-center">Checkout</h1>
-        
+
+        <div className="flex items-center justify-between mb-8 bg-transparent">
+          <Button variant="outline" className="bg-transparent" onClick={() => router.push("/store")}>←</Button>
+          <h1 className="text-3xl font-bold text-center flex-grow">Checkout</h1>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Order Summary */}
-          <Card className="md:col-span-1">
+          <Card className="md:col-span-1 bg-black text-white">
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>
@@ -331,7 +331,7 @@ export default function CheckoutPage() {
           </Card>
           
           {/* Payment Form */}
-          <Card className="md:col-span-2">
+          <Card className="md:col-span-2 bg-black text-white">
             <CardHeader>
               <CardTitle>Payment Details</CardTitle>
             </CardHeader>
