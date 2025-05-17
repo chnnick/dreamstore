@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import NavBar from "@/components/Navbar";
+import Header from "@/components/Header";
 import { Footer } from '@/components/Footer';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
@@ -58,77 +58,70 @@ export default function ShopPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <main >
-        <header className="py-4 px-15 w-full">
-          <NavBar />
-        </header>
-        <div className="flex flex-col md:flex-row gap-20 max-w-7xl py-5 px-10">
-          <motion.div 
-            id="productinfo" 
-            className="w-full md:w-1/2"
-            initial={{ opacity: 0, x: -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="h-[300px]">
-              <h2 className="text-9xl font-semibold leading-tight">{currentProduct.name}</h2>
-            </div>
-            <div className="flex flex-col items-center h-[60px] my-3">
-              <Button 
-                className="w-full h-[60px] text-3xl bg-[var(--text-color)] text-[var(--bg-color)] hover:scale-110 transition-transform hover:bg-[var(--text-color)] hover:text-[var(--bg-color)]"
-                onClick={() => addItem(currentProduct)}>
-                Add to Cart
-              </Button>
-            </div>
-            <div className="space-y-6">
-              <div className="h-[60px]">
-                <p className="text-5xl">${currentProduct.price.toFixed(2)}</p>
-              </div>
-              <div className="h-[60px]">
-                <p className="text-5xl">{currentProduct.stocked ? "In Stock" : "Out of Stock"}</p>
-              </div>
-              <div className="h-[60px]">
-                <p className="text-5xl">{currentProduct.size} OZ</p>
-              </div>
-              <div className="h-[200px]">
-                <p className="text-5xl">{currentProduct.description}</p>
-              </div>
-            </div>
-          </motion.div>
-          <motion.div 
-            id="productimage" 
-            className="flex flex-row w-full md:w-1/2 justify-center items-center relative"
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+    <main className="flex flex-col min-h-screen">
+      <Header />
+      <div className="flex flex-col md:flex-row gap-20 max-w-7xl py-5 px-10">
+        <motion.div 
+          id="productinfo" 
+          className="w-full md:w-1/2"
+          initial={{ opacity: 0, x: -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="h-[300px]">
+            <h2 className="text-9xl font-semibold leading-tight">{currentProduct.name}</h2>
+          </div>
+          <div className="flex flex-col items-center h-[60px] my-3">
             <Button 
-              onClick={goToPreviousProduct}
-              className="absolute left-0 z-10 hover:scale-105 transition-transform"
-            >
-              <ChevronLeft className="w-6 h-6" />
+              className="w-full h-[60px] text-3xl bg-[var(--text-color)] text-[var(--bg-color)] hover:scale-110 transition-transform hover:bg-[var(--text-color)] hover:text-[var(--bg-color)]"
+              onClick={() => addItem(currentProduct)}>
+              Add to Cart
             </Button>
-            <div className="w-full relative overflow-hidden flex justify-center items-center">
-              <img 
-                src={`${currentProduct.imageUrl}/product1.png`}
-                alt={currentProduct.name}
-                className={`max-w-[700px] max-h-[500px] w-auto h-auto object-contain ${slideDirection ? `animate-slide-${slideDirection}` : ''}`}
-                onAnimationEnd={() => setSlideDirection(null)}
-              />
+          </div>
+          <div className="space-y-6">
+            <div className="h-[60px]">
+              <p className="text-5xl">${currentProduct.price.toFixed(2)}</p>
             </div>
-            <Button 
-              onClick={goToNextProduct}
-              className="absolute right-0 z-10 hover:scale-110 transition-transform"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </Button>
-          </motion.div>
-        </div>
-        <footer className="w-full mt-auto">
-          <Footer />
-        </footer>
-      </main>
-    </div>
+            <div className="h-[60px]">
+              <p className="text-5xl">{currentProduct.stocked ? "In Stock" : "Out of Stock"}</p>
+            </div>
+            <div className="h-[60px]">
+              <p className="text-5xl">{currentProduct.size} OZ</p>
+            </div>
+            <div className="h-[60px]">
+              <p className="text-5xl">{currentProduct.description}</p>
+            </div>
+          </div>
+        </motion.div>
+        <motion.div 
+          id="productimage" 
+          className="flex flex-row w-full md:w-1/2 justify-center items-center relative"
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Button 
+            onClick={goToPreviousProduct}
+            className="absolute left-0 z-10 hover:scale-105 transition-transform"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </Button>
+          <div className="w-full relative overflow-hidden flex justify-center items-center">
+            <img 
+              src={`${currentProduct.imageUrl}/product1.png`}
+              alt={currentProduct.name}
+              className={`max-w-[700px] max-h-[500px] w-auto h-auto object-contain ${slideDirection ? `animate-slide-${slideDirection}` : ''}`}
+              onAnimationEnd={() => setSlideDirection(null)}
+            />
+          </div>
+          <Button 
+            onClick={goToNextProduct}
+            className="absolute right-0 z-10 hover:scale-110 transition-transform"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </Button>
+        </motion.div>
+      </div>
+    </main>
   );
 }

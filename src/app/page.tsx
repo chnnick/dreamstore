@@ -1,7 +1,7 @@
 // src/app/page.tsx
 'use client';
 import { useState, useEffect } from 'react';
-import NavBar from '@/components/Navbar';
+import NavBar from '@/components/Header';
 import CartButton from '@/components/CartButton';
 import { motion, AnimatePresence } from "framer-motion";
 import Image from 'next/image';
@@ -15,7 +15,8 @@ const images = [
 
 const navLinks = [
     { name: "Shop", href: "/store" },
-    { name: "Gallery", href: "/gallery" }
+    { name: "Gallery", href: "/gallery" },
+    { name: "About", href: "/about" }
 ];
 
 export default function HomePage() {
@@ -29,33 +30,36 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
-      {/* Left Navigation Section (1/3) */}
-      <div className="w-full md:w-1/3 p-8 lg:p-16 flex flex-col items-center justify-center">
+    <div className="flex flex-col h-screen overflow-hidden md:flex-row md:min-h-screen md:overflow-auto">
+      {/* Left Navigation Section */}
+      <header className="w-full h-1/3 md:h-screen md:w-1/2 p-6 md:p-8 lg:p-16 flex flex-col items-center justify-center text-center md:text-left md:items-start">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
-          className="w-full text-5xl md:text-7xl lg:text-7xl xl:text-9xl"
+          className="w-full flex flex-col items-center md:items-start"
         >
-          <AnimatedLogo />
-          <nav className="mt-10 md:flex md:flex-col md:items-start md:justify-center md:space-y-6
-                        static h-auto flex-row items-center justify-center space-y-0 space-x-6 py-4 w-full">
+          <div className="h-[120px] md:h-[200px] flex items-center justify-center w-full md:justify-start">
+            <div className="text-4xl sm:text-5xl md:text-7xl lg:text-7xl xl:text-9xl">
+              <AnimatedLogo />
+            </div>
+          </div>
+          <nav className="mt-4 md:mt-10 w-full flex md:flex-col flex-row justify-center space-x-4 md:space-x-0 md:space-y-2 md:items-start md:space-y-6 py-2 md:py-4">
               {navLinks.map((link) => (
                   <Link 
                       key={link.name} 
                       href={link.href}
-                      className="text-3xl md:text-5xl lg:text-7xl hover:scale-120 transition-transform duration-200"
+                      className="text-2xl sm:text-3xl md:text-5xl lg:text-7xl hover:scale-120 transition-transform duration-200"
                   >
                       {link.name}
                   </Link>
               ))}
           </nav>
         </motion.div>
-      </div>
+      </header>
 
-      {/* Right Image Slideshow Section (2/3) */}
-      <div className="w-full md:w-2/3 flex items-center justify-center relative">
+      {/* Right Image Slideshow Section */}
+      <div className="w-full h-2/3 md:h-screen md:w-1/2 flex items-center justify-center relative">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentImage}
@@ -63,7 +67,7 @@ export default function HomePage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
-            className="relative w-full h-[50vh] md:h-[80vh]"
+            className="relative w-full h-full"
           >
             <Image
               className="object-contain"
