@@ -17,9 +17,9 @@ export default function Header() {
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
-        className="flex flex-col md:flex-row items-center justify-center"
+        className="w-full"
       >
-        <header className="justify-between items-center py-2 md:py-4 px-4 md:px-15 w-full">
+        <header className="flex flex-col md:flex-row justify-between items-center py-2 md:py-4 px-4 md:px-16">
           <div className="flex justify-center items-center mb-2 md:mb-0">
               <Link 
                   href="/"
@@ -28,7 +28,7 @@ export default function Header() {
                   <AnimatedLogo />
               </Link>
           </div>
-          <nav className="flex flex-row items-center justify-center w-full">
+          <nav className="flex items-center"> 
               <div className="flex items-center space-x-3 sm:space-x-4 md:space-x-6 lg:space-x-8">
                   {navLinks.map((link) => (
                       <Link 
