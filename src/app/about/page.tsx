@@ -7,13 +7,13 @@ export default function AboutPage() {
   return (
     <main className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex flex-col justify-center items-center">
-        <Image src="/chiller.png" alt="riley fish" width={100} height={100} />
-        <div className="flex flex-row gap-4 justify-center items-center min-h-screen">
+      <div className="flex-1 flex flex-col justify-center items-center gap-4">
+        <Image src="/chiller.png" alt="riley fish" width={300} height={300} />
+        <div className="flex flex-row gap-4 justify-center items-center">
           <p>By CutByTheKid</p>
           <a href="https://www.instagram.com/cutbythekid/" target="_blank" rel="noopener noreferrer">
-          <Instagram />
-        </a>
+            <Instagram />
+          </a>
         </div>
       </div>
     </main>

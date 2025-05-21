@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { createClient } from '../../../utils/supabase/server'
+import { createClient } from '@/utils/supabase/server'
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
@@ -15,32 +15,14 @@ export async function login(formData: FormData) {
     password: formData.get('password') as string,
   }
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+  const { error, data: authData } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
+    console.error('Login error:', error.message)
     redirect('/error')
   }
 
-  revalidatePath('/', 'layout') // revlaidate paths that change with a signed in user
-  redirect('/')
-}
-
-export async function signup(formData: FormData) {
-  const supabase = await createClient()
-
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  }
-
-  const { error } = await supabase.auth.signUp(data)
-
-  if (error) {
-    redirect('/error')
-  }
-
+  console.log('Login successful:', authData.user?.email)
   revalidatePath('/', 'layout')
-  redirect('/')
+  redirect('/riley/edit')
 }

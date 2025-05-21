@@ -1,8 +1,7 @@
 // src/app/page.tsx
 "use client"
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { login } from './actions';
 import { CardContent, CardDescription } from '@/components/ui/card';
 import { CardTitle } from '@/components/ui/card';
 import { CardHeader } from '@/components/ui/card';
@@ -15,29 +14,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const router = useRouter();
-  const supabase = createClientComponentClient();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setError(error.message);
-      } else {
-        router.push('/private');
-        router.refresh();
-      }
-    } catch (err) {
-      setError('An error occurred during login');
-    }
-  };
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -49,7 +26,7 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">email</Label>
               <Input 
@@ -80,6 +57,7 @@ export default function LoginPage() {
               <div className="text-red-500 text-sm">{error}</div>
             )}
             <Button 
+              formAction={login}
               type="submit" 
               className="w-full"
             >

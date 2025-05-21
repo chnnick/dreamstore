@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { createClient } from '../../../utils/supabase/server'
+import { createClient } from '@/utils/supabase/server'
 
 
 export async function logout() {
@@ -26,4 +26,12 @@ export async function logout() {
 
   revalidatePath('/', 'layout')
   redirect('/')
+}
+
+export async function addProduct(formData: FormData) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.from('products').insert({
+    name: formData.get('name'),
+  })
 }

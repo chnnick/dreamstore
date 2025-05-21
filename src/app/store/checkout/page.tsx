@@ -266,14 +266,13 @@ export default function CheckoutPage() {
   const finalTotal = cartTotal + shippingCost;
 
   return (
-    <div className="bg-black min-h-screen py-8">
+    <div className="min-h-screen">
       <Header />
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex items-center justify-between mb-8 bg-transparent">
           <Button variant="outline" className="bg-transparent" onClick={() => router.push("/store")}>←</Button>
           <h1 className="text-3xl font-bold text-center flex-grow">Checkout</h1>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Order Summary */}
           <Card className="md:col-span-1 bg-black text-white">
@@ -291,21 +290,16 @@ export default function CheckoutPage() {
                     <p className="font-medium">${(item.product.price * item.quantity).toFixed(2)}</p>
                   </div>
                 ))}
-                
                 <Separator />
-                
                 <div className="flex justify-between">
                   <p>Subtotal</p>
                   <p className="font-medium">${cartTotal.toFixed(2)}</p>
                 </div>
-                
                 <div className="flex justify-between">
                   <p>Shipping</p>
                   <p className="font-medium">${shippingCost.toFixed(2)}</p>
                 </div>
-                
                 <Separator />
-                
                 <div className="flex justify-between text-lg font-bold">
                   <p>Total</p>
                   <p>${finalTotal.toFixed(2)}</p>
@@ -313,7 +307,6 @@ export default function CheckoutPage() {
               </div>
             </CardContent>
           </Card>
-          
           {/* Payment Form */}
           <Card className="md:col-span-2 bg-black text-white">
             <CardHeader>
