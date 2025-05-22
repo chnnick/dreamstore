@@ -7,11 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from 'next/image';
 import Link from 'next/link';
 import AnimatedLogo from '@/components/AnimatedLogo';
-
-const images = [
-  { src: "/product1-photos/product1.png", alt: "First image of riley's hair product" }, 
-  { src: "/product1-photos/product2.png", alt: "Second image of riley's hair product" }
-];
+import { createClient } from '@/utils/supabase/client';
 
 const navLinks = [
     { name: "Shop", href: "/store" },
@@ -21,13 +17,37 @@ const navLinks = [
 
 export default function HomePage() {
   const [currentImage, setCurrentImage] = useState(0);
+  const [images, setImages] = useState<{ src: string; alt: string }[]>([]);
 
   useEffect(() => {
+    async function fetchProducts() {
+      const supabase = createClient();
+      const { data: products } = await supabase
+        .from('products')
+        .select('image_url, name')
+        .order('created_at', { ascending: false });
+
+      if (products && products.length > 0) {
+        setImages(products.map(product => ({
+          src: product.image_url,
+          alt: product.name
+        })));
+      } else {
+        setImages([]);
+      }
+    }
+
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    if (images.length > 0) {
       const interval = setInterval(() => {
-          setCurrentImage((prev) => (prev + 1) % images.length);
+        setCurrentImage((prev) => (prev + 1) % images.length);
       }, 6000);
       return () => clearInterval(interval);
-  }, []);
+    }
+  }, [images]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden md:flex-row md:min-h-screen md:overflow-auto">
@@ -61,23 +81,25 @@ export default function HomePage() {
       {/* Right Image Slideshow Section */}
       <div className="w-full h-2/3 md:h-screen md:w-1/2 flex items-center justify-center relative">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={currentImage}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1 }}
-            className="relative w-full h-full"
-          >
-            <Image
-              className="object-contain"
-              alt={images[currentImage].alt}
-              src={images[currentImage].src}
-              fill
-              sizes="(max-width: 768px) 100vw, 66vw"
-              priority
-            />
-          </motion.div>
+          {images.length > 0 && (
+            <motion.div
+              key={currentImage}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1 }}
+              className="relative w-full h-full"
+            >
+              <Image
+                className="object-contain"
+                alt={images[currentImage].alt}
+                src={images[currentImage].src}
+                fill
+                sizes="(max-width: 768px) 100vw, 66vw"
+                priority
+              />
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
     </div>

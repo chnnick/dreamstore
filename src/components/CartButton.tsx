@@ -71,7 +71,7 @@ export default function CartButton() {
               <div className="flex items-center space-x-4">
                 <div className="h-16 w-16 relative rounded overflow-hidden">
                   <img 
-                    src={`${item.product.imageUrl}/product1.png`}
+                    src={`${item.product.image_url}`}
                     alt={item.product.name}
                     className="object-cover absolute inset-0 h-full w-full"
                   />

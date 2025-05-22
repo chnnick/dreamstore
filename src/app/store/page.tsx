@@ -1,61 +1,99 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import { Footer } from '@/components/Footer';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { motion } from 'framer-motion';
+import { createClient } from '@/utils/supabase/client';
 
 interface Product {
   id: number;
   name: string;
-  stocked: boolean;
-  size: number;
+  stock_status: string;
+  size: string;
   price: number;
   description: string;
-  imageUrl: string;
+  image_url: string;
+  second_image_url?: string;
+  stripe_id: string;
 }
 
-const products: Product[] = [
-  {
-    id: 0,
-    name: "Texture Powder",
-    stocked: true,
-    size: 20,
-    price: 24.99,
-    description: "Created by barbers for barbers.",
-    imageUrl: "/product1-photos"
-  }, 
-  {
-    id: 1,
-    name: "Poop Powder",
-    stocked: true,
-    size: 20,
-    price: 0.99,
-    description: "Test item.",
-    imageUrl: "/product2-photos"
-  }
-  
-];
-
 export default function ShopPage() {
-  const [currentProduct, setCurrentProduct] = useState<Product>(products[0]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const addItem = useCartStore(state => state.addItem);
 
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        setProducts(data);
+        if (data.length > 0) {
+          setCurrentProduct(data[0]);
+        }
+      } catch (err) {
+        setError('Failed to load products');
+        console.error('Error fetching products:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchProducts();
+  }, []);
+
   const goToPreviousProduct = () => {
+    if (!currentProduct || products.length === 0) return;
+    
     setSlideDirection('right');
-    const prevIndex = currentProduct.id - 1 < 0 ? products.length - 1 : currentProduct.id - 1;
+    const currentIndex = products.findIndex(p => p.id === currentProduct.id);
+    const prevIndex = currentIndex - 1 < 0 ? products.length - 1 : currentIndex - 1;
     setCurrentProduct(products[prevIndex]);
   };
 
   const goToNextProduct = () => {
+    if (!currentProduct || products.length === 0) return;
+    
     setSlideDirection('left');
-    const nextIndex = currentProduct.id + 1 > products.length - 1 ? 0 : currentProduct.id + 1;
+    const currentIndex = products.findIndex(p => p.id === currentProduct.id);
+    const nextIndex = currentIndex + 1 > products.length - 1 ? 0 : currentIndex + 1;
     setCurrentProduct(products[nextIndex]);
   };
+
+  if (isLoading) {
+    return (
+      <main className="flex flex-col min-h-screen">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-2xl">Loading products...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !currentProduct) {
+    return (
+      <main className="flex flex-col min-h-screen">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-2xl text-red-500">{error || 'No products available'}</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex flex-col min-h-screen">
@@ -83,10 +121,10 @@ export default function ShopPage() {
               <p className="text-5xl">${currentProduct.price.toFixed(2)}</p>
             </div>
             <div className="h-[60px]">
-              <p className="text-5xl">{currentProduct.stocked ? "In Stock" : "Out of Stock"}</p>
+              <p className="text-5xl">{currentProduct.stock_status}</p>
             </div>
             <div className="h-[60px]">
-              <p className="text-5xl">{currentProduct.size} OZ</p>
+              <p className="text-5xl">{currentProduct.size}</p>
             </div>
             <div className="h-[60px]">
               <p className="text-5xl">{currentProduct.description}</p>
@@ -108,7 +146,7 @@ export default function ShopPage() {
           </Button>
           <div className="w-full relative overflow-hidden flex justify-center items-center">
             <img 
-              src={`${currentProduct.imageUrl}/product1.png`}
+              src={currentProduct.image_url}
               alt={currentProduct.name}
               className={`max-w-[700px] max-h-[500px] w-auto h-auto object-contain ${slideDirection ? `animate-slide-${slideDirection}` : ''}`}
               onAnimationEnd={() => setSlideDirection(null)}

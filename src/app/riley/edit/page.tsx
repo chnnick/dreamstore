@@ -56,14 +56,14 @@ export default async function EditPage() {
                 <SheetHeader>
                   <SheetTitle className="text-[var(--text-color)]">Add Product</SheetTitle>
                   <SheetDescription className="text-[var(--text-color)]/70">
-                    Add new products here, make sure they are also added to your STRIPE!
+                    <b className="text-red-500">Add new products here, make sure they are also added to your STRIPE!</b>
                   </SheetDescription>
                 </SheetHeader>
                 <form action={addProduct} className="px-4 space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-name">Name</Label>
+                    <Label htmlFor="name">Name</Label>
                     <Input
-                      id="edit-name"
+                      id="name"
                       name="name"
                       required
                     />
@@ -79,38 +79,45 @@ export default async function EditPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-stock-status">Stock Status</Label>
+                    <Label htmlFor="stock-status">Stock Status</Label>
                     <Select name="stock_status">
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="In Stock">In Stock</SelectItem>
-                        <SelectItem value="Out of Stock">Out of Stock</SelectItem>
-                        <SelectItem value="Coming Soon">Coming Soon</SelectItem>
+                        <SelectItem value="true">In Stock</SelectItem>
+                        <SelectItem value="false">Out of Stock</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-size">Size</Label>
+                    <Label htmlFor="size">Size</Label>
                     <Input
-                      id="edit-size"
+                      id="size"
                       name="size"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-description">Description</Label>
+                    <Label htmlFor="description">Description</Label>
                     <Textarea
-                      id="edit-description"
+                      id="description"
                       name="description"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-image">Product Image</Label>
+                    <Label htmlFor="stripe_id">Stripe ID</Label>
                     <Input
-                      id="edit-image"
+                      id="stripe_id"
+                      name="stripe_id"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="image">Product Image</Label>
+                    <Input
+                      id="image"
                       name="image"
                       type="file"
                       accept="image/*"
@@ -118,18 +125,18 @@ export default async function EditPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-image">Secondary Image</Label>
+                    <Label htmlFor="image-2">Secondary Image</Label>
                     <Input
-                      id="edit-image-2"
+                      id="image-2"
                       name="image-2"
                       type="file"
                       accept="image/*"
                       className="cursor-pointer"
                     />
                   </div>
-                  <Button type="submit" className="w-full">Save Changes</Button>
+                  <Button type="submit" className="w-full bg-[var(--text-color)] text-[var(--bg-color)] hover:bg-[var(--text-color)] hover:text-[var(--text-color)]hover:text-[var(--text-color)] hover:scale-105 transition-all duration-100">Save Changes</Button>
                 </form>
-            </SheetContent>
+              </SheetContent>
             </Sheet>
             {products?.map((product) => (
               <div key={product.id} className="border rounded p-4">
@@ -152,7 +159,8 @@ export default async function EditPage() {
                 <h3 className="font-bold">{product.name}</h3>
                 <p className="text-sm">${product.price}</p>
                 <p className="text-sm">Size: {product.size}</p>
-                <p className="text-sm">Status: {product.stock_status}</p>
+                <p className="text-sm">Status: {product.stock_status ? "In Stock" : "Out of Stock"}</p>
+                <p className="text-sm">Description: {product.description}</p>
                 <div className="mt-4 flex gap-2">
                   <Sheet>
                     <SheetTrigger asChild>
@@ -165,7 +173,7 @@ export default async function EditPage() {
                           Make changes to your product here. Click save when you're done.
                         </SheetDescription>
                       </SheetHeader>
-                      <form action={editProduct} className="space-y-4">
+                      <form action={editProduct} className="px-4 space-y-4">
                         <input type="hidden" name="id" value={product.id} />
                         <input type="hidden" name="current_image_url" value={product.image_url} />
                         <input type="hidden" name="current_second_image_url" value={product.second_image_url} />
@@ -184,9 +192,8 @@ export default async function EditPage() {
                               <SelectValue placeholder="Select stock status" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="In Stock">In Stock</SelectItem>
-                              <SelectItem value="Out of Stock">Out of Stock</SelectItem>
-                              <SelectItem value="Coming Soon">Coming Soon</SelectItem>
+                              <SelectItem value="true">In Stock</SelectItem>
+                              <SelectItem value="false">Out of Stock</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -199,45 +206,25 @@ export default async function EditPage() {
                           <Textarea id="description" name="description" defaultValue={product.description} required />
                         </div>
                         <div className="space-y-2">
+                          <Label htmlFor="stripe_id">Stripe ID</Label>
+                          <Input id="stripe_id" name="stripe_id" defaultValue={product.stripe_id} required />
+                        </div>
+                        <div className="space-y-2">
                           <Label htmlFor="image">Main Image</Label>
                           <Input id="image" name="image" type="file" accept="image/*" />
-                          {product.image_url && (
-                            <div className="mt-2">
-                              <p className="text-sm text-gray-500">Current image:</p>
-                              <Image
-                                src={product.image_url}
-                                alt={product.name}
-                                width={200}
-                                height={200}
-                                className="mt-1 rounded-lg"
-                              />
-                            </div>
-                          )}
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="image-2">Second Image (Optional)</Label>
                           <Input id="image-2" name="image-2" type="file" accept="image/*" />
-                          {product.second_image_url && (
-                            <div className="mt-2">
-                              <p className="text-sm text-gray-500">Current second image:</p>
-                              <Image
-                                src={product.second_image_url}
-                                alt={`${product.name} - Second view`}
-                                width={200}
-                                height={200}
-                                className="mt-1 rounded-lg"
-                              />
-                            </div>
-                          )}
                         </div>
-                        <Button type="submit" className="w-full">Update Product</Button>
+                        <Button type="submit" className="w-full bg-[var(--text-color)] text-[var(--bg-color)] hover:scale-105 transition-all duration-100">Update Product</Button>
                       </form>
                     </SheetContent>
                   </Sheet>
                   <form action={deleteProduct} className="flex-1">
                     <input type="hidden" name="id" value={product.id} />
                     <input type="hidden" name="image_url" value={product.image_url} />
-                    <Button type="submit" variant="destructive" className="w-full hover:scale-105 transition-all duration-100">Delete</Button>
+                    <Button type="submit" variant="destructive" className="w-full bg-[var(--text-color)] text-[var(--bg-color)] hover:bg-[var(--text-color)] hover:text-[var(--text-color)] hover:scale-105 transition-all duration-100">Delete</Button>
                   </form>
                 </div>
               </div>

@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       },
       metadata: {
         order_items: JSON.stringify(items.map((item: any) => ({
-          product_id: item.product.id,
+          product_id: item.product.stripe_id,
           name: item.product.name,
           quantity: item.quantity,
         }))),
