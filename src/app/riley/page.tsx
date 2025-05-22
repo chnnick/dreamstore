@@ -1,6 +1,6 @@
 // src/app/page.tsx
 "use client"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { login } from './actions';
 import { CardContent, CardDescription } from '@/components/ui/card';
 import { CardTitle } from '@/components/ui/card';
@@ -9,12 +9,25 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { createClient } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const router = useRouter();
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        router.push('/riley/edit');
+      }
+    };
+    checkAuth();
+  }, [router]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
