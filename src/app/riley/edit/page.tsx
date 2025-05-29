@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { Button } from '@/components/ui/button'
-import { addProduct, editProduct, deleteProduct, logout } from './actions'
+import { addProduct, editProduct, deleteProduct, logout, addGalleryImage, deleteGalleryImage } from './actions'
 import Header from '@/components/Header'
 import Image from 'next/image'
 import {
@@ -39,12 +39,19 @@ export default async function EditPage() {
     .select('*')
     .order('created_at', { ascending: false })
 
+  // Fetch existing gallery images
+  const { data: galleryImages, error: galleryImagesError } = await supabase
+    .from('images')
+    .select('*')
+    .order('created_at', { ascending: false })
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <div className="flex-1 flex flex-col items-center gap-8 p-8">
         <h1 className="text-2xl font-bold">ADMIN PAGE</h1>
         <div className="w-full max-w-4xl">
+          <h2 className="text-2xl font-bold mb-4">Add Products</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Sheet>
               <SheetTrigger asChild>
@@ -225,6 +232,70 @@ export default async function EditPage() {
                     <input type="hidden" name="id" value={product.id} />
                     <input type="hidden" name="image_url" value={product.image_url} />
                     <Button type="submit" variant="destructive" className="w-full bg-[var(--text-color)] text-[var(--bg-color)] hover:bg-[var(--text-color)] hover:text-[var(--text-color)] hover:scale-105 transition-all duration-100">Delete</Button>
+                  </form>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <h2 className="text-2xl font-bold mt-8 mb-4">Add Gallery Images</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="w-full h-full">
+                  <Plus />
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="w-[400px] sm:w-[540px] bg-[var(--bg-color)] text-[var(--text-color)] border-l border-[var(--border)]">
+                <SheetHeader>
+                  <SheetTitle className="text-[var(--text-color)]">Add Gallery Image</SheetTitle>
+                  <SheetDescription className="text-[var(--text-color)]/70">
+                    <b className="text-red-500">Add images of product here</b>
+                  </SheetDescription>
+                </SheetHeader>
+                <form action={addGalleryImage} className="px-4 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="image">Image</Label>
+                    <Input
+                      id="image"
+                      name="image"
+                      type="file"
+                      accept="image/*"
+                      className="cursor-pointer"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Input
+                      id="description"
+                      name="description"
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full bg-[var(--text-color)] text-[var(--bg-color)] hover:bg-[var(--text-color)] hover:text-[var(--text-color)] hover:scale-105 transition-all duration-100">Add Image</Button>
+                </form>
+              </SheetContent>
+            </Sheet>
+            {galleryImages?.map((image) => (
+              <div key={image.id} className="relative w-full h-48 mb-4">
+                <Image
+                  src={image.image_url}
+                  alt={image.description || 'Gallery image'}
+                  fill
+                  className="object-cover rounded"
+                />
+                <div className="flex flex-row items-center justify-between absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm">
+                  {image.description}
+                  <form action={deleteGalleryImage} className="flex items-center justify-center">
+                    <input type="hidden" name="id" value={image.id} />
+                    <input type="hidden" name="image_url" value={image.image_url} />
+                    <Button 
+                      type="submit" 
+                      variant="destructive" 
+                      className="text-red-500 bg-transparent hover:bg-transparent hover:scale-105 transition-all duration-100"
+                    >
+                      Delete
+                    </Button>
                   </form>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from "react";
 
-const toType = ["dreamcore.us", "@cutbythekid"];
+const toType = ["dreamcore.us", "cutbythekid"];
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

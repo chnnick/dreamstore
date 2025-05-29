@@ -121,7 +121,7 @@ export default function ShopPage() {
               <p className="text-5xl">${currentProduct.price.toFixed(2)}</p>
             </div>
             <div className="h-[60px]">
-              <p className="text-5xl">{currentProduct.stock_status}</p>
+              <p className="text-5xl">{currentProduct.stock_status ? "In Stock" : "Out of Stock"}</p>
             </div>
             <div className="h-[60px]">
               <p className="text-5xl">{currentProduct.size}</p>
@@ -145,12 +145,21 @@ export default function ShopPage() {
             <ChevronLeft className="w-6 h-6" />
           </Button>
           <div className="w-full relative overflow-hidden flex justify-center items-center">
-            <img 
-              src={currentProduct.image_url}
-              alt={currentProduct.name}
-              className={`max-w-[700px] max-h-[500px] w-auto h-auto object-contain ${slideDirection ? `animate-slide-${slideDirection}` : ''}`}
-              onAnimationEnd={() => setSlideDirection(null)}
-            />
+            <div className="relative flex justify-center items-center w-full h-full group">
+              <img 
+                src={currentProduct.image_url}
+                alt={currentProduct.name}
+                className={`max-w-[700px] max-h-[500px] w-auto h-auto object-contain transition-opacity duration-300 ${slideDirection ? `animate-slide-${slideDirection}` : ''} ${currentProduct.second_image_url ? 'group-hover:opacity-0' : ''}`}
+                onAnimationEnd={() => setSlideDirection(null)}
+              />
+              {currentProduct.second_image_url && (
+                <img 
+                  src={currentProduct.second_image_url}
+                  alt={`${currentProduct.name} - Second view`}
+                  className="max-w-[700px] max-h-[500px] w-auto h-auto object-contain absolute opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                />
+              )}
+            </div>
           </div>
           <Button 
             onClick={goToNextProduct}

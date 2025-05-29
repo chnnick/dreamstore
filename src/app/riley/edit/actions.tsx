@@ -294,3 +294,105 @@ export async function logout() {
   revalidatePath('/', 'layout')
   redirect('/')
 }
+
+export async function addGalleryImage(formData: FormData) {
+  const supabase = await createClient()
+  
+  // Verify user is authenticated
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) {
+    throw new Error('You must be authenticated to add gallery images')
+  }
+
+  const description = formData.get('description') as string
+  const imageFile = formData.get('image') as File
+
+  if (!imageFile) {
+    throw new Error('Image is required')
+  }
+
+  console.log('Attempting to upload gallery image:', {
+    fileName: imageFile.name,
+    fileSize: imageFile.size,
+    fileType: imageFile.type
+  })
+
+  // Upload image to Supabase Storage
+  const fileExt = imageFile.name.split('.').pop()
+  const imagePath = `${Date.now()}.${fileExt}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('gallery')
+    .upload(imagePath, imageFile)
+
+  if (uploadError) {
+    console.error('Gallery image upload error:', {
+      error: uploadError,
+      message: uploadError.message
+    })
+    throw new Error(`Error uploading image: ${uploadError.message}`)
+  }
+
+  // Get the public URL for the uploaded image
+  const { data: { publicUrl } } = supabase.storage
+    .from('gallery')
+    .getPublicUrl(imagePath)
+
+  console.log('Attempting to insert gallery record:', {
+    image_url: publicUrl,
+    description
+  })
+
+  // Add the image to the gallery table
+  const { error: insertError } = await supabase
+    .from('images')
+    .insert([
+      {
+        image_url: publicUrl,
+        description,
+        created_at: new Date().toISOString(),
+      }
+    ])
+
+  if (insertError) {
+    console.error('Gallery record insertion error:', {
+      error: insertError,
+      message: insertError.message,
+      code: insertError.code,
+      details: insertError.details
+    })
+    // Clean up the uploaded image if insert fails
+    await supabase.storage.from('gallery').remove([imagePath])
+    throw new Error(`Error adding gallery image: ${insertError.message}`)
+  }
+
+  revalidatePath('/riley/edit')
+}
+
+export async function deleteGalleryImage(formData: FormData) {
+  const supabase = await createClient()
+  
+  const id = formData.get('id') as string
+  const image_url = formData.get('image_url') as string
+
+  // Extract the file path from the URL
+  const imagePath = image_url.split('/').pop()
+  if (imagePath) {
+    // Delete the image from storage
+    await supabase.storage
+      .from('gallery')
+      .remove([imagePath])
+  }
+
+  // Delete the image record from the database
+  const { error: deleteError } = await supabase
+    .from('images')
+    .delete()
+    .eq('id', id)
+
+  if (deleteError) {
+    throw new Error('Error deleting gallery image')
+  }
+
+  revalidatePath('/riley/edit')
+}
