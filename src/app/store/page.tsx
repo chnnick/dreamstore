@@ -140,7 +140,7 @@ export default function ShopPage() {
         >
           <Button 
             onClick={goToPreviousProduct}
-            className="absolute left-0 z-10 hover:scale-105 transition-transform"
+            className="absolute left-0 z-10 hover:scale-110 transition-transform"
           >
             <ChevronLeft className="w-6 h-6" />
           </Button>

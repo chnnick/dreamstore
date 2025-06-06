@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import Stripe from 'stripe'
 
 
 export async function addProduct(formData: FormData) {
@@ -14,6 +15,7 @@ export async function addProduct(formData: FormData) {
     throw new Error('You must be authenticated to add products')
   }
 
+  // Extract form data
   const name = formData.get('name') as string
   const price = parseFloat(formData.get('price') as string)
   const stock_status = formData.get('stock_status') === 'true'
@@ -21,241 +23,236 @@ export async function addProduct(formData: FormData) {
   const description = formData.get('description') as string
   const imageFile = formData.get('image') as File
   const imageFile2 = formData.get('image-2') as File
-  const stripe_id = formData.get('stripe_id') as string
-
 
   if (!imageFile) {
     throw new Error('Image is required')
   }
 
-  // First, create the product to get its ID
-  console.log('Attempting to insert product with data:', {
-    name,
-    price,
-    stock_status,
-    size,
-    description,
-    created_at: new Date().toISOString(),
-  })
-
+  // Step 1: Create initial product record
   const { data: product, error: insertError } = await supabase
     .from('products')
-    .insert([
-      {
-        name,
-        price,
-        stock_status,
-        size,
-        description,
-        image_url: '',
-        second_image_url: '',
-        stripe_id,
-        created_at: new Date().toISOString(),
-      }
-    ])
+    .insert([{
+      name,
+      price,
+      stock_status,
+      size,
+      description,
+      created_at: new Date().toISOString(),
+    }])
     .select()
     .single()
 
   if (insertError) {
-    console.error('Product insertion error:', {
-      error: insertError,
-      code: insertError.code,
-      message: insertError.message,
-      details: insertError.details,
-      hint: insertError.hint
-    })
+    console.error('Product insertion error:', insertError)
     throw new Error(`Error creating product: ${insertError.message}`)
   }
 
   if (!product) {
-    console.error('No product data returned after insertion')
     throw new Error('Error creating product: No data returned')
   }
 
   const productId = product.id
   const productFolder = `product${productId}`
 
-  // Upload main image to Supabase Storage
-  const fileExt = imageFile.name.split('.').pop()
-  const mainImagePath = `${productFolder}/image-1.${fileExt}`
-  
-  console.log('Attempting to upload image:', {
-    path: mainImagePath,
-    fileSize: imageFile.size,
-    fileType: imageFile.type,
-    fileName: imageFile.name
-  })
-
-  const { data: uploadData, error: uploadError } = await supabase
-    .storage
-    .from('product-images')
-    .upload(mainImagePath, imageFile)
-
-  if (uploadError) {
-    console.error('Image upload error:', {
-      error: uploadError,
-      message: uploadError.message
-    })
-    // Clean up the product if image upload fails
-    await supabase.from('products').delete().eq('id', productId)
-    throw new Error(`Error uploading main image: ${uploadError.message}`)
-  }
-
-  console.log('Image uploaded successfully:', uploadData)
-
-  // Get the public URL for the uploaded image
-  const { data: { publicUrl } } = supabase.storage
-    .from('product-images')
-    .getPublicUrl(mainImagePath)
-
-  // Handle second image if provided
-  let second_image_url = null
-  if (imageFile2 && imageFile2.size > 0) {
-    const fileExt2 = imageFile2.name.split('.').pop()
-    const secondImagePath = `${productFolder}/image-2.${fileExt2}`
-    const { error: uploadError2 } = await supabase.storage
-      .from('product-images')
-      .upload(secondImagePath, imageFile2)
-
-    if (uploadError2) {
-      // Clean up the product and main image if second image upload fails
-      await supabase.storage.from('product-images').remove([mainImagePath])
-      await supabase.from('products').delete().eq('id', productId)
-      throw new Error('Error uploading second image')
-    }
-
-    const { data: { publicUrl: publicUrl2 } } = supabase.storage
-      .from('product-images')
-      .getPublicUrl(secondImagePath)
-    
-    second_image_url = publicUrl2
-  }
-
-  // Update the product with image URLs
-  const { error: updateError } = await supabase
-    .from('products')
-    .update({
-      image_url: publicUrl,
-      second_image_url
-    })
-    .eq('id', productId)
-
-  if (updateError) {
-    // Clean up uploaded images if update fails
-    await supabase.storage.from('product-images').remove([mainImagePath])
-    if (second_image_url) {
-      const fileExt2 = imageFile2?.name.split('.').pop()
-      const secondImagePath = `${productFolder}/image-2.${fileExt2}`
-      await supabase.storage.from('product-images').remove([secondImagePath])
-    }
-    await supabase.from('products').delete().eq('id', productId)
-    throw new Error('Error updating product with image URLs')
-  }
-
-  revalidatePath('/riley/edit')
-}
-
-export async function editProduct(formData: FormData) {
-  const supabase = await createClient()
-  
-  const id = formData.get('id') as string
-  const name = formData.get('name') as string
-  const price = parseFloat(formData.get('price') as string)
-  const stock_status = formData.get('stock_status') as string
-  const size = formData.get('size') as string
-  const description = formData.get('description') as string
-  const imageFile = formData.get('image') as File
-  const imageFile2 = formData.get('image-2') as File
-  const stripe_id = formData.get('stripe_id') as string
-
-  let image_url = formData.get('current_image_url') as string
-  let second_image_url = formData.get('current_second_image_url') as string
-
-  const productFolder = `product${id}`
-
-  // If a new main image is uploaded, handle the upload
-  if (imageFile && imageFile.size > 0) {
+  try {
+    // Step 2: Upload main image
     const fileExt = imageFile.name.split('.').pop()
     const mainImagePath = `${productFolder}/image-1.${fileExt}`
     
-    // Delete old main image if it exists
-    if (image_url) {
-      const oldImagePath = image_url.split('/').pop()
-      if (oldImagePath) {
-        await supabase.storage.from('product-images').remove([oldImagePath])
-      }
-    }
-
     const { error: uploadError } = await supabase.storage
       .from('product-images')
       .upload(mainImagePath, imageFile)
 
     if (uploadError) {
-      throw new Error('Error uploading main image')
+      throw new Error(`Error uploading main image: ${uploadError.message}`)
     }
 
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl: first_image_url } } = supabase.storage
       .from('product-images')
       .getPublicUrl(mainImagePath)
 
-    image_url = publicUrl
-  }
+    // Step 3: Upload second image if provided
+    let second_image_url = null
+    if (imageFile2 && imageFile2.size > 0) {
+      const fileExt2 = imageFile2.name.split('.').pop()
+      const secondImagePath = `${productFolder}/image-2.${fileExt2}`
+      
+      const { error: uploadError2 } = await supabase.storage
+        .from('product-images')
+        .upload(secondImagePath, imageFile2)
 
-  // If a new second image is uploaded, handle the upload
-  if (imageFile2 && imageFile2.size > 0) {
-    const fileExt2 = imageFile2.name.split('.').pop()
-    const secondImagePath = `${productFolder}/image-2.${fileExt2}`
-
-    // Delete old second image if it exists
-    if (second_image_url) {
-      const oldImagePath = second_image_url.split('/').pop()
-      if (oldImagePath) {
-        await supabase.storage.from('product-images').remove([oldImagePath])
+      if (uploadError2) {
+        throw new Error('Error uploading second image')
       }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(secondImagePath)
+      second_image_url = publicUrl
     }
 
-    const { error: uploadError2 } = await supabase.storage
-      .from('product-images')
-      .upload(secondImagePath, imageFile2)
-
-    if (uploadError2) {
-      throw new Error('Error uploading second image')
+    // Step 4: Create Stripe product
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+    const images = [first_image_url]
+    if (second_image_url) {
+      images.push(second_image_url)
     }
-
-    const { data: { publicUrl: publicUrl2 } } = supabase.storage
-      .from('product-images')
-      .getPublicUrl(secondImagePath)
-
-    second_image_url = publicUrl2
-  }
-
-  const { error: updateError } = await supabase
-    .from('products')
-    .update({
+    
+    const stripe_product = await stripe.products.create({
       name,
-      price,
-      image_url,
-      second_image_url,
-      stock_status,
-      size,
+      active: stock_status,
       description,
-      stripe_id
+      images
     })
-    .eq('id', id)
 
-  if (updateError) {
-    throw new Error('Error updating product')
+    // Step 5: Update product with image URLs and Stripe ID
+    const { error: updateError } = await supabase
+      .from('products')
+      .update({
+        image_url: first_image_url,
+        second_image_url: second_image_url,
+        stripe_id: stripe_product.id
+      })
+      .eq('id', productId)
+
+    if (updateError) {
+      throw new Error('Error updating product with image URLs and Stripe ID')
+    }
+
+    revalidatePath('/riley/edit')
+  } catch (error) {
+    // Cleanup on error
+    await supabase.storage.from('product-images').remove([`${productFolder}/image-1.${imageFile.name.split('.').pop()}`])
+    if (imageFile2) {
+      await supabase.storage.from('product-images').remove([`${productFolder}/image-2.${imageFile2.name.split('.').pop()}`])
+    }
+    await supabase.from('products').delete().eq('id', productId)
+    
+    console.error('Error in product creation process:', error)
+    throw error
   }
+}
 
-  revalidatePath('/riley/edit')
+export async function editProduct(formData: FormData) {
+  const supabase = await createClient()
+  
+  // Extract form data
+  const id = formData.get('id') as string
+  const name = formData.get('name') as string
+  const price = parseFloat(formData.get('price') as string)
+  const stock_status = formData.get('stock_status') === 'true'
+  const size = formData.get('size') as string
+  const description = formData.get('description') as string
+  const imageFile = formData.get('image') as File
+  const imageFile2 = formData.get('image-2') as File
+  const current_image_url = formData.get('current_image_url') as string
+  const current_second_image_url = formData.get('current_second_image_url') as string
+  const stripe_id = formData.get('stripe_id') as string
+
+  const productFolder = `product${id}`
+  let image_url = current_image_url
+  let second_image_url = current_second_image_url
+
+  try {
+    // Step 1: Handle main image upload if provided
+    if (imageFile && imageFile.size > 0) {
+      const fileExt = imageFile.name.split('.').pop()
+      const mainImagePath = `${productFolder}/image-1.${fileExt}`
+      
+      // Delete old main image if it exists
+      if (current_image_url) {
+        const oldImagePath = current_image_url.split('/').pop()
+        if (oldImagePath) {
+          await supabase.storage.from('product-images').remove([oldImagePath])
+        }
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(mainImagePath, imageFile)
+
+      if (uploadError) {
+        throw new Error('Error uploading main image')
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(mainImagePath)
+
+      image_url = publicUrl
+    }
+
+    // Step 2: Handle second image upload if provided
+    if (imageFile2 && imageFile2.size > 0) {
+      const fileExt2 = imageFile2.name.split('.').pop()
+      const secondImagePath = `${productFolder}/image-2.${fileExt2}`
+
+      // Delete old second image if it exists
+      if (current_second_image_url) {
+        const oldImagePath = current_second_image_url.split('/').pop()
+        if (oldImagePath) {
+          await supabase.storage.from('product-images').remove([oldImagePath])
+        }
+      }
+
+      const { error: uploadError2 } = await supabase.storage
+        .from('product-images')
+        .upload(secondImagePath, imageFile2)
+
+      if (uploadError2) {
+        throw new Error('Error uploading second image')
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(secondImagePath)
+
+      second_image_url = publicUrl
+    }
+
+    // Step 3: Update Stripe product
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+    const images = [image_url]
+    if (second_image_url) {
+      images.push(second_image_url)
+    }
+
+    await stripe.products.update(stripe_id, {
+      name,
+      active: stock_status,
+      description,
+      images
+    })
+
+    // Step 4: Update product in database
+    const { error: updateError } = await supabase
+      .from('products')
+      .update({
+        name,
+        price,
+        image_url,
+        second_image_url,
+        stock_status,
+        size,
+        description
+      })
+      .eq('id', id)
+
+    if (updateError) {
+      throw new Error('Error updating product')
+    }
+
+    revalidatePath('/riley/edit')
+  } catch (error) {
+    console.error('Error in product update process:', error)
+    throw error
+  }
 }
 
 export async function deleteProduct(formData: FormData) {
   const supabase = await createClient()
   
   const id = formData.get('id') as string
-  const image_url = formData.get('image_url') as string
-  const second_image_url = formData.get('second_image_url') as string
 
   // Delete the product folder from storage
   const productFolder = `product${id}`
@@ -269,6 +266,20 @@ export async function deleteProduct(formData: FormData) {
       .from('product-images')
       .remove(filesToDelete)
   }
+
+  const { data: product } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (!product) {
+    throw new Error('Product not found')
+  }
+
+  // Delete the product from stripe
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+  await stripe.products.del(product.stripe_id)
 
   // Delete the product from the database
   const { error: deleteError } = await supabase

@@ -26,6 +26,7 @@ export default function GalleryPage() {
   const [positions, setPositions] = useState<Record<number, Position>>({});
   const [zIndices, setZIndices] = useState<Record<number, number>>({});
   const [maxZIndex, setMaxZIndex] = useState(1);
+  const [visibleImages, setVisibleImages] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     async function fetchImages() {
@@ -48,6 +49,16 @@ export default function GalleryPage() {
         setPositions(initialPositions);
         setZIndices(initialZIndices);
         setMaxZIndex(Math.max(...Object.values(initialZIndices)));
+
+        // Start sequential fade-in animation
+        data?.forEach((image, index) => {
+          setTimeout(() => {
+            setVisibleImages(prev => ({
+              ...prev,
+              [image.id]: true
+            }));
+          }, 200 * index); // 200ms delay between each image
+        });
       } catch (error) {
         console.error('Error fetching images:', error);
       } finally {
@@ -109,7 +120,9 @@ export default function GalleryPage() {
           return (
             <div
               key={image.id}
-              className="absolute cursor-move group"
+              className={`absolute cursor-move group transition-opacity duration-1000 ${
+                visibleImages[image.id] ? 'opacity-100' : 'opacity-0'
+              }`}
               style={{
                 left: `${position.x}px`,
                 top: `${position.y}px`,

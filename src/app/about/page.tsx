@@ -1,13 +1,18 @@
 'use client'
 
 import Header from "@/components/Header"
+import { motion } from "framer-motion"
 import { Instagram } from "lucide-react"
 import Image from "next/image"
 export default function AboutPage() {
   return (
     <main className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex-1 flex flex-col justify-center items-center gap-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex-1 flex flex-col justify-center items-center gap-4">
         <Image src="/chiller.png" alt="riley fish" width={300} height={300} />
         <div className="flex flex-row gap-4 justify-center items-center">
           <p>By CutByTheKid</p>
@@ -15,7 +20,7 @@ export default function AboutPage() {
             <Instagram />
           </a>
         </div>
-      </div>
+      </motion.div>
     </main>
   )
 }

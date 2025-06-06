@@ -114,14 +114,6 @@ export default async function EditPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="stripe_id">Stripe ID</Label>
-                    <Input
-                      id="stripe_id"
-                      name="stripe_id"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
                     <Label htmlFor="image">Product Image</Label>
                     <Input
                       id="image"
@@ -211,10 +203,6 @@ export default async function EditPage() {
                         <div className="space-y-2">
                           <Label htmlFor="description">Description</Label>
                           <Textarea id="description" name="description" defaultValue={product.description} required />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="stripe_id">Stripe ID</Label>
-                          <Input id="stripe_id" name="stripe_id" defaultValue={product.stripe_id} required />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="image">Main Image</Label>
