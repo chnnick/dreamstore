@@ -26,7 +26,10 @@ interface Product {
   name: string;
   price: number;
   description: string;
-  imageUrl: string;
+  image_url: string;
+  stock_status: string;
+  size: string;
+  second_image_url?: string;
 }
 
 interface CartItem {
