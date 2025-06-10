@@ -1,11 +1,22 @@
 "use client"
+import CartButton from "@/components/CartButton";
+import { motion } from "framer-motion";
+import { Instagram } from 'lucide-react';
+
 export function Footer() {
   return (
-    <div className="bg-black w-full">
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-300">
-          <p>{new Date().getFullYear()} @CutByTheKid. All rights reserved.</p>
-        </div>
+    <div className="w-full">
+      <div className="flex flex-row justify-between justify-evenly p-8 border-t border-[var(--text-color)] items-center">
+        <p className="text-sm">{new Date().getFullYear()} CutByTheKid. All rights reserved.</p>
+        <motion.a 
+                href="https://www.instagram.com/cutbythekid" 
+                target="_blank" 
+                className="text-foreground/80 hover:text-primary transition-colors"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+        >
+          <Instagram className="h-5 w-5 text-[var(--text-color)]" />
+        </motion.a>
       </div>
     </div>
   );

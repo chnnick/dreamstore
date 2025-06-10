@@ -1,6 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+export const config = {
+  matcher: [
+    // Only protect the /riley/edit admin section
+    '/riley/edit/:path*',
+  ],
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -32,19 +39,14 @@ export async function updateSession(request: NextRequest) {
   // issues with users being randomly logged out.
 
   // IMPORTANT: DO NOT REMOVE auth.getUser()
-
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  // Only redirect if trying to access /riley/edit without authentication
+  if (!user && request.nextUrl.pathname.startsWith('/riley/edit')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = '/riley'
     return NextResponse.redirect(url)
   }
 
