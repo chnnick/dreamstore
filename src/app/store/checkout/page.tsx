@@ -30,6 +30,7 @@ interface Product {
   stock_status: string;
   size: string;
   second_image_url?: string;
+  stripe_id: string;
 }
 
 interface CartItem {
@@ -263,10 +264,73 @@ export default function CheckoutPage() {
   const items = useCartStore(state => state.items);
   const getTotalItems = useCartStore(state => state.getTotalItems);
   const getTotalPrice = useCartStore(state => state.getTotalPrice);
+  const removeItem = useCartStore(state => state.removeItem);
+  const [validatedItems, setValidatedItems] = useState<CartItem[]>([]);
+  const [isValidating, setIsValidating] = useState(true);
+
+  useEffect(() => {
+    async function validateCartItems() {
+      setIsValidating(true);
+      const validItems: CartItem[] = [];
+
+      for (const item of items) {
+        try {
+          // Check if product is in stock
+          if (item.product.stock_status !== 'true') {
+            removeItem(item.product.id);
+            continue;
+          }
+
+          // Verify product exists in Stripe
+          const response = await fetch(`/api/verify-product?stripe_id=${item.product.stripe_id}`);
+          const { exists } = await response.json();
+
+          if (exists) {
+            validItems.push(item);
+          } else {
+            removeItem(item.product.id);
+          }
+        } catch (error) {
+          console.error('Error validating product:', error);
+          removeItem(item.product.id);
+        }
+      }
+
+      setValidatedItems(validItems);
+      setIsValidating(false);
+    }
+
+    validateCartItems();
+  }, [items, removeItem]);
 
   const cartTotal = getTotalPrice();
   const shippingCost = 5.99;
   const finalTotal = cartTotal + shippingCost;
+
+  if (isValidating) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="text-center">Validating cart items...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (validatedItems.length === 0) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="text-center">
+            <h2 className="text-2xl mb-4">Your cart is empty</h2>
+            <Button onClick={() => router.push('/store')}>Return to Store</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -284,7 +348,7 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {items.map((item) => (
+                {validatedItems.map((item) => (
                   <div key={item.product.id} className="flex justify-between">
                     <div>
                       <p className="font-medium">{item.product.name}</p>
@@ -317,7 +381,7 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent>
               <Elements stripe={stripePromise}>
-                <CheckoutForm cartItems={items} />
+                <CheckoutForm cartItems={validatedItems} />
               </Elements>
             </CardContent>
           </Card>

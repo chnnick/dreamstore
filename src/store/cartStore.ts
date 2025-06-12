@@ -10,6 +10,7 @@ interface Product {
   stock_status: string;
   size: string;
   second_image_url?: string;
+  stripe_id: string;
 }
 
 interface CartItem {
