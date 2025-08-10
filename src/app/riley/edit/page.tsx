@@ -186,7 +186,7 @@ export default async function EditPage() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="stock_status">Stock Status</Label>
-                          <Select name="stock_status" defaultValue={product.stock_status}>
+                          <Select name="stock_status" defaultValue={String(product.stock_status)}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select stock status" />
                             </SelectTrigger>

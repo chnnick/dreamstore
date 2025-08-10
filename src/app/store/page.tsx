@@ -8,18 +8,7 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { motion } from 'framer-motion';
 import { createClient } from '@/utils/supabase/client';
-
-interface Product {
-  id: number;
-  name: string;
-  stock_status: string;
-  size: string;
-  price: number;
-  description: string;
-  image_url: string;
-  second_image_url?: string;
-  stripe_id: string;
-}
+import { Product } from '@/types/product';
 
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -111,9 +100,14 @@ export default function ShopPage() {
           </div>
           <div className="flex flex-col items-center h-[60px] my-3">
             <Button 
-              className="w-full h-[60px] text-3xl bg-[var(--text-color)] text-[var(--bg-color)] hover:scale-110 transition-transform hover:bg-[var(--text-color)] hover:text-[var(--bg-color)]"
-              onClick={() => addItem(currentProduct)}>
-              Add to Cart
+              className={`w-full h-[60px] text-3xl ${
+                currentProduct.stock_status
+                  ? "bg-[var(--text-color)] text-[var(--bg-color)] hover:scale-110 transition-transform hover:bg-[var(--text-color)] hover:text-[var(--bg-color)]"
+                  : "bg-gray-500 text-white cursor-not-allowed"
+              }`}
+              onClick={() => currentProduct.stock_status && addItem(currentProduct)}
+              disabled={!currentProduct.stock_status}>
+              {currentProduct.stock_status ? "Add to Cart" : "Out of Stock"}
             </Button>
           </div>
           <div className="space-y-6">

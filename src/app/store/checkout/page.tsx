@@ -19,19 +19,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useCartStore } from '@/store/cartStore';
 import Header from '@/components/Header';
+import { Product } from '@/types/product';
 const stripePromise = loadStripe(process.env.STRIPE_PUBLISHABLE_KEY || 'pk_test_51RECkqIM92jQZxXyptz6E62tHW6Je8PueQlLxLTF8I98fQ8ZWnxZuDiuaffNX0slXfDBeYDNPjoUsAoPTcfC3Lpt00fdBLl8oh');
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  description: string;
-  image_url: string;
-  stock_status: string;
-  size: string;
-  second_image_url?: string;
-  stripe_id: string;
-}
 
 interface CartItem {
   product: Product;
@@ -276,7 +265,7 @@ export default function CheckoutPage() {
       for (const item of items) {
         try {
           // Check if product is in stock
-          if (item.product.stock_status !== 'true') {
+          if (!item.product.stock_status) {
             removeItem(item.product.id);
             continue;
           }

@@ -1,17 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  description: string;
-  image_url: string;
-  stock_status: string;
-  size: string;
-  second_image_url?: string;
-  stripe_id: string;
-}
+import { Product } from '@/types/product';
 
 interface CartItem {
   product: Product;

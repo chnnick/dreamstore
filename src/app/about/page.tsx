@@ -9,9 +9,9 @@ export default function AboutPage() {
     <main className="flex flex-col min-h-screen">
       <Header />
       <motion.div 
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        initial={{ opacity: 0}}
+        animate={{ opacity: 1}}
+        transition={{ duration: 3 }}
         className="flex-1 flex flex-col justify-center items-center gap-4">
         <a href="https://www.instagram.com/cutbythekid/" target="_blank" rel="noopener noreferrer">
           <Image src="/chiller.png" alt="riley fish" width={300} height={300} />
